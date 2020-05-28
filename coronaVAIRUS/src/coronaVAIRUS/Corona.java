@@ -1,5 +1,6 @@
 package coronaVAIRUS;
 
+
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Graphics;
@@ -30,7 +31,7 @@ import javax.swing.filechooser.FileSystemView;
 
 public class Corona extends JFrame implements ActionListener{
 	// DefiniÃ§Ã£o de variÃ¡veis relacionadas Ã  tela
-    private FrameR frameR = new FrameR();
+	private FrameR frameR = new FrameR();
 	private JPanel contentPane, panelMenu, panelH, panel;
 	private JLabel labelPosX, labelPosY;
 	private JButton buttonUpload, buttonZoomP, buttonZoomM, buttonSelecionar, buttonDetectar, buttonCalc;
@@ -42,6 +43,10 @@ public class Corona extends JFrame implements ActionListener{
     private int[] histograma = new int[256];
     private int[] histogramaDiscreto = new int[128];
 
+	//variavel do retangulo atual
+	Ponto ret1 = new Ponto();
+	Ponto ret2 = new Ponto();
+    
     private int newImageWidth;
 	private int newImageHeight;
 
@@ -73,6 +78,7 @@ public class Corona extends JFrame implements ActionListener{
 	//Imagem carregada
 	private BufferedImage imagem = null;
 	private BufferedImage imagemL = null;
+	private static String filename = "";
 	//variÃ¡vel do zoom
 	private double Zoom = 0;
 
@@ -100,7 +106,7 @@ public class Corona extends JFrame implements ActionListener{
 	public Corona() {
 		//Inicializando Ambiente
 		setTitle("Corona Finder");
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(0,0,1220,600);
 		contentPane = new JPanel();
 		setContentPane(contentPane);
@@ -208,6 +214,10 @@ public class Corona extends JFrame implements ActionListener{
 		this.addMouseMotionListener( mouse );
 
     }
+	
+	public static String getFilename() {
+		return filename;
+	}
 
 	public void actionPerformed(ActionEvent arg0){
 		if(arg0.getSource() == buttonUpload){
@@ -236,7 +246,8 @@ public class Corona extends JFrame implements ActionListener{
 		    selectedFile = jfc.getSelectedFile();
 		}
         try {
-            imagem = ImageIO.read(new File(selectedFile.getAbsolutePath()));   
+            filename = selectedFile.getAbsolutePath();
+            imagem = ImageIO.read(new File(filename));   
 			newImageWidth=imagem.getWidth();
 			newImageHeight=imagem.getHeight();
             g = panel.getGraphics();
@@ -298,7 +309,7 @@ public class Corona extends JFrame implements ActionListener{
 	} 
 
 	protected void do_buttonCalc_actionPerfomed(ActionEvent arg0){
-        frameR.setVisible(true);
+		frameR.setVisible(true);
 	}  
 
 	int maior() {
@@ -473,9 +484,7 @@ public class Corona extends JFrame implements ActionListener{
 		private Ponto ReMin = new Ponto();
 		private Ponto ReMax = new Ponto();
 
-		//variavel do retangulo atual
-		Ponto ret1 = new Ponto();
-		Ponto ret2 = new Ponto();
+
 
 		private int x1 = -1;
 		private int x2 = -1;
@@ -485,7 +494,7 @@ public class Corona extends JFrame implements ActionListener{
 		public void retangulo() {
 			g = panel.getGraphics();
         	g.drawImage(imagem,0,0,newImageWidth,newImageHeight,null);
-			selecionar(ReMin,ReMax);
+			//selecionar(ReMin,ReMax);
 			g.setColor(Color.RED);
 			//reta superior
 			g.drawLine(ReMin.x,ReMax.y-100,ReMax.x,ReMax.y-100);

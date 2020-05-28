@@ -2,8 +2,11 @@ package coronaVAIRUS;
 
 import java.awt.Color;
 import java.awt.EventQueue;
+import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
@@ -17,6 +20,7 @@ public class FrameR  extends JFrame implements ActionListener{
 
 	private JPanel contentPane,panelMenu, panel;
     private JButton buttonLBPH;
+    private Graphics g;
 
 	private String corFundo = "#00a388";
 
@@ -38,7 +42,7 @@ public class FrameR  extends JFrame implements ActionListener{
 	public FrameR() {
 		//Inicializando Ambiente
 		setTitle("Corona Results");
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(560,0,800,600);
 		contentPane = new JPanel();
 		setContentPane(contentPane);
@@ -80,6 +84,13 @@ public class FrameR  extends JFrame implements ActionListener{
 		);
 
         panelMenu.setLayout(g1_panelMenu);
+        
+        //Painel de imagem
+      	panel = new JPanel();
+      	panel.setBackground(Color.WHITE);
+      	panel.setBounds(90,0,710,600);
+      	contentPane.add(panel);
+      	panel.setLayout(null);
 
     }
 
@@ -90,6 +101,9 @@ public class FrameR  extends JFrame implements ActionListener{
     }
 
     protected void do_buttonLBPH_actionPerfomed(ActionEvent arg0){
-
+    	HoughCircles hc = new HoughCircles(Corona.getFilename());
+		BufferedImage detectados = hc.detectar();
+		g = panel.getGraphics();
+		g.drawImage(detectados, 0, 0, null);
     }
 }
