@@ -19,7 +19,7 @@ import javax.swing.SwingConstants;
 public class FrameR  extends JFrame implements ActionListener{
 
 	private JPanel contentPane,panelMenu, panel;
-    private JButton buttonLBPH;
+    private JButton buttonLBPH, buttonHough;
     private Graphics g;
 
 	private String corFundo = "#00a388";
@@ -55,6 +55,14 @@ public class FrameR  extends JFrame implements ActionListener{
 		panelMenu.setBackground(Color.WHITE);
 		contentPane.add(panelMenu);
 
+		//botao Hough 
+		buttonHough = new JButton();
+		buttonHough.addActionListener(this);
+        buttonHough .setIcon(lbphI);
+		buttonHough .setBackground(Color.decode(corFundo));
+		buttonHough .setHorizontalTextPosition(SwingConstants.CENTER); 
+		
+		
 		//botao LBPH
 		buttonLBPH = new JButton();
 		buttonLBPH.addActionListener(this);
@@ -65,21 +73,24 @@ public class FrameR  extends JFrame implements ActionListener{
         GroupLayout g1_panelMenu = new GroupLayout(panelMenu);
 		g1_panelMenu.setHorizontalGroup(
 				g1_panelMenu.createParallelGroup(Alignment.CENTER)
-                .addGroup( g1_panelMenu.createSequentialGroup()
+                //.addGroup( g1_panelMenu.createSequentialGroup()
                 .addGap(10)
+				.addComponent(buttonHough)
 				.addComponent(buttonLBPH)
-                )
+                //)
                     		
 			);
 
         g1_panelMenu.setVerticalGroup(
 				g1_panelMenu.createParallelGroup(Alignment.CENTER)
+				.addGap(10)
 				.addGroup(g1_panelMenu.createSequentialGroup()
                     .addGap(30)
-					.addGroup(g1_panelMenu.createParallelGroup(Alignment.BASELINE)
+				//.addGroup(g1_panelMenu.createParallelGroup(Alignment.BASELINE)
+						.addComponent(buttonHough)
+						.addGap(30)
 						.addComponent(buttonLBPH)
-
-						)
+					//	)
 				)
 		);
 
@@ -95,15 +106,22 @@ public class FrameR  extends JFrame implements ActionListener{
     }
 
     public void actionPerformed(ActionEvent arg0){
+	    if(arg0.getSource() == buttonHough){
+		    do_buttonHough_actionPerfomed(arg0);
+	    }
 	    if(arg0.getSource() == buttonLBPH){
 		    do_buttonLBPH_actionPerfomed(arg0);
 	    }
     }
-
-    protected void do_buttonLBPH_actionPerfomed(ActionEvent arg0){
+    
+    protected void do_buttonHough_actionPerfomed(ActionEvent arg0){
     	HoughCircles hc = new HoughCircles(Corona.getFilename());
 		BufferedImage detectados = hc.detectar();
 		g = panel.getGraphics();
 		g.drawImage(detectados, 0, 0, null);
+    }
+
+    protected void do_buttonLBPH_actionPerfomed(ActionEvent arg0){
+
     }
 }
