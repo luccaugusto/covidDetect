@@ -11,6 +11,7 @@ package coronaVAIRUS;
 //		OK Limiarizacao
 //		Eliptica de Hough
 //		LBPH
+// 		Correlacao Cruzada
 //		Descritor de haralick
 //		descritores de forma
 //			circularidade
