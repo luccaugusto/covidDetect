@@ -1,8 +1,19 @@
 package coronaVAIRUS;
 
 //TODO
-//Mudar o nome do evento no frameR
-//Criar Botoes
+// OK Ler imagem png, tiff jpg 
+// OK Exibir imagem com opcao de zoom e histograma
+// OK extrair amostra da imagem atravez de um retangulo vermelho
+// OK Mudar o nome do evento no frameR
+// Criar icones Botoes
+// Detectar e contar quantos virus existem na imagem, visualizar em outra janela com a mesma imagem marcada com uma cor pra cada virus
+// indicar o total de virus
+//		OK Limiarizacao
+//		Eliptica de Hough
+//		LBPH
+//		Descritor de haralick
+//		descritores de forma
+//			circularidade
 
 import java.awt.Color;
 import java.awt.EventQueue;
@@ -13,8 +24,13 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferInt;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
@@ -32,6 +48,12 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileSystemView;
 
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfByte;
+import org.opencv.imgcodecs.Imgcodecs;
+
 public class Corona extends JFrame implements ActionListener{
 	// DefiniÃ§Ã£o de variÃ¡veis relacionadas Ã  tela
 	private FrameR frameR = new FrameR();
@@ -45,6 +67,8 @@ public class Corona extends JFrame implements ActionListener{
 	private JColorChooser Cores;
     private int[] histograma = new int[256];
     private int[] histogramaDiscreto = new int[128];
+    private int offset = 110; // espaco ocupado pelos botoes
+    private int offsetx = 5; // espaco ocupado pelos botoes
 
 	//variavel do retangulo atual
 	Ponto ret1 = new Ponto();
@@ -79,9 +103,10 @@ public class Corona extends JFrame implements ActionListener{
 	private int AlturaH  = 540;
 
 	//Imagem carregada
-	private BufferedImage imagem = null;
-	private BufferedImage imagemL = null;
-	private static String filename = "";
+	private static BufferedImage imagem = null;
+	private static BufferedImage imagemL = null;
+	private static BufferedImage template = null;
+
 	//variÃ¡vel do zoom
 	private double Zoom = 0;
 
@@ -218,10 +243,15 @@ public class Corona extends JFrame implements ActionListener{
 
     }
 	
-	public static String getFilename() {
-		return filename;
+	
+	public static Mat getMatImg() {
+		return bufferedImage2Mat(imagem);
 	}
 
+	public static Mat getMatTemplate() {
+		return bufferedImage2Mat(template);
+	}
+	
 	public void actionPerformed(ActionEvent arg0){
 		if(arg0.getSource() == buttonUpload){
 			do_buttonUpload_actionPerfomed(arg0);
@@ -249,7 +279,7 @@ public class Corona extends JFrame implements ActionListener{
 		    selectedFile = jfc.getSelectedFile();
 		}
         try {
-            filename = selectedFile.getAbsolutePath();
+            String filename = selectedFile.getAbsolutePath();
             imagem = ImageIO.read(new File(filename));   
 			newImageWidth=imagem.getWidth();
 			newImageHeight=imagem.getHeight();
@@ -261,6 +291,10 @@ public class Corona extends JFrame implements ActionListener{
             
         }
 	} 
+	
+	//init_offset = ((h * y0) + x) bytes
+	//offset = width - x1 + width - x0
+	//ateh height-y1
 
 	protected void do_buttonSelecionar_actionPerfomed(ActionEvent arg0){
             ferramentaAtual = Ferramentas.SELECAO;
@@ -479,6 +513,61 @@ public class Corona extends JFrame implements ActionListener{
 
 */
     }
+	
+	public static Mat bufferedImage2Mat(BufferedImage sourceImg) {
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+		long millis = System.currentTimeMillis();
+
+	    DataBuffer dataBuffer = sourceImg.getRaster().getDataBuffer();
+	    byte[] imgPixels = null;
+	    Mat imgMat = null;
+
+	    int width = sourceImg.getWidth();
+	    int height = sourceImg.getHeight();
+
+	    if(dataBuffer instanceof DataBufferByte) {
+	            imgPixels = ((DataBufferByte)dataBuffer).getData();
+	    }
+
+	    if(dataBuffer instanceof DataBufferInt) {
+
+	        int byteSize = width * height;
+	        imgPixels = new byte[byteSize*3];
+
+	        int[] imgIntegerPixels = ((DataBufferInt)dataBuffer).getData();
+
+	        for(int p = 0; p < byteSize; p++) {
+	            imgPixels[p*3 + 0] = (byte) ((imgIntegerPixels[p] & 0x00FF0000) >> 16);
+	            imgPixels[p*3 + 1] = (byte) ((imgIntegerPixels[p] & 0x0000FF00) >> 8);
+	            imgPixels[p*3 + 2] = (byte) (imgIntegerPixels[p] & 0x000000FF);
+	        }
+	    }
+
+	    if(imgPixels != null) {
+	        imgMat = new Mat(height, width, CvType.CV_8UC3);
+	        imgMat.put(0, 0, imgPixels);
+	    }
+
+	    return imgMat;
+	}
+	
+	public static BufferedImage Mat2BufferedImage(Mat mat){
+		BufferedImage bufImage = null;
+		try {  
+		//Encoding the image
+	      MatOfByte matOfByte = new MatOfByte();
+	      Imgcodecs.imencode(".jpg", mat, matOfByte);
+	      //Storing the encoded Mat in a byte array
+	      byte[] byteArray = matOfByte.toArray();
+	      //Preparing the Buffered Image
+	      InputStream in = new ByteArrayInputStream(byteArray);
+	      bufImage = ImageIO.read(in);
+	      
+	    }catch (IOException e) {
+	    	e.printStackTrace();
+	    }
+	    return bufImage;
+	   }
 
 	//Classe para lidar com eventos de mouse
 	class MouseHandler extends MouseAdapter
@@ -499,18 +588,27 @@ public class Corona extends JFrame implements ActionListener{
         	g.drawImage(imagem,0,0,newImageWidth,newImageHeight,null);
 			//selecionar(ReMin,ReMax);
 			g.setColor(Color.RED);
+
 			//reta superior
-			g.drawLine(ReMin.x,ReMax.y-100,ReMax.x,ReMax.y-100);
+			g.drawLine(ReMin.x-offsetx,ReMax.y-offset,ReMax.x-offsetx,ReMax.y-offset);
 			//reta esquerda
-			g.drawLine(ReMin.x,ReMin.y-100,ReMin.x,ReMax.y-100);
+			g.drawLine(ReMin.x-offsetx,ReMin.y-offset,ReMin.x-offsetx,ReMax.y-offset);
 			//reta inferior
-			g.drawLine(ReMin.x,ReMin.y-100,ReMax.x,ReMin.y-100);
+			g.drawLine(ReMin.x-offsetx,ReMin.y-offset,ReMax.x-offsetx,ReMin.y-offset);
 			//reta direita
-			g.drawLine(ReMax.x,ReMin.y-100,ReMax.x,ReMax.y-100);
+			g.drawLine(ReMax.x-offsetx,ReMin.y-offset,ReMax.x-offsetx,ReMax.y-offset);
+			
 			ret1.x = ReMin.x;
 			ret1.y = ReMin.y;
 			ret2.x = ReMax.x;
 			ret2.y = ReMax.y;
+			
+			
+			int altura = (ReMax.y-offset) - (ReMin.y-offset);
+			int largura = (ReMax.x-offsetx) - (ReMin.x-offsetx);
+
+			template = imagem.getSubimage(ReMin.x-offsetx, ReMin.y-offset, largura, altura);
+			
 			ReMin.x = ReMin.y = ReMax.x = ReMax.y = -1;
 		}
 
@@ -537,6 +635,7 @@ public class Corona extends JFrame implements ActionListener{
 					g.drawLine(inicioL,i,Largura,i);
 				}
 			}
+			
 		}
 
 

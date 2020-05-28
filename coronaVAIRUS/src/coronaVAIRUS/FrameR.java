@@ -19,7 +19,7 @@ import javax.swing.SwingConstants;
 public class FrameR  extends JFrame implements ActionListener{
 
 	private JPanel contentPane,panelMenu, panel;
-    private JButton buttonLBPH, buttonHough;
+    private JButton buttonLBPH, buttonCC, buttonHough;
     private Graphics g;
 
 	private String corFundo = "#00a388";
@@ -62,6 +62,12 @@ public class FrameR  extends JFrame implements ActionListener{
 		buttonHough .setBackground(Color.decode(corFundo));
 		buttonHough .setHorizontalTextPosition(SwingConstants.CENTER); 
 		
+		//botao CC
+		buttonCC = new JButton();
+		buttonCC.addActionListener(this);
+		buttonCC.setIcon(lbphI);
+		buttonCC.setBackground(Color.decode(corFundo));
+		buttonCC.setHorizontalTextPosition(SwingConstants.CENTER); 
 		
 		//botao LBPH
 		buttonLBPH = new JButton();
@@ -76,6 +82,7 @@ public class FrameR  extends JFrame implements ActionListener{
                 //.addGroup( g1_panelMenu.createSequentialGroup()
                 .addGap(10)
 				.addComponent(buttonHough)
+				.addComponent(buttonCC)
 				.addComponent(buttonLBPH)
                 //)
                     		
@@ -88,6 +95,8 @@ public class FrameR  extends JFrame implements ActionListener{
                     .addGap(30)
 				//.addGroup(g1_panelMenu.createParallelGroup(Alignment.BASELINE)
 						.addComponent(buttonHough)
+						.addGap(30)
+						.addComponent(buttonCC)
 						.addGap(30)
 						.addComponent(buttonLBPH)
 					//	)
@@ -109,18 +118,28 @@ public class FrameR  extends JFrame implements ActionListener{
 	    if(arg0.getSource() == buttonHough){
 		    do_buttonHough_actionPerfomed(arg0);
 	    }
+	    if(arg0.getSource() == buttonCC){
+		    do_buttonCC_actionPerfomed(arg0);
+	    }
 	    if(arg0.getSource() == buttonLBPH){
 		    do_buttonLBPH_actionPerfomed(arg0);
 	    }
     }
     
     protected void do_buttonHough_actionPerfomed(ActionEvent arg0){
-    	HoughCircles hc = new HoughCircles(Corona.getFilename());
+    	HoughCircles hc = new HoughCircles(Corona.getMatImg());
 		BufferedImage detectados = hc.detectar();
 		g = panel.getGraphics();
 		g.drawImage(detectados, 0, 0, null);
     }
 
+    protected void do_buttonCC_actionPerfomed(ActionEvent arg0){
+    	CorrelacaoCruzada cc = new CorrelacaoCruzada(Corona.getMatImg(), Corona.getMatTemplate());
+		BufferedImage detectados = cc.detectar();
+		g = panel.getGraphics();
+		g.drawImage(detectados, 0, 0, null);
+    }
+    
     protected void do_buttonLBPH_actionPerfomed(ActionEvent arg0){
 
     }

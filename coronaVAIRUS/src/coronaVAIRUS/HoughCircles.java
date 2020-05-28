@@ -16,17 +16,16 @@ import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
+
+
+//TODO
+//adaptar para encontrar so os virus parecidos
+
+
 class HoughCirclesRun {
-	public Mat run(String filename) {
+	public Mat run(Mat imagem) {
         // Load an image
-        Mat src = Imgcodecs.imread(filename, Imgcodecs.IMREAD_COLOR);
-        // Check if image is loaded fine
-        if( src.empty() ) {
-            System.out.println("Error opening image!");
-            	System.out.println("Program Arguments: [image_name -- default "
-            			+ filename +"] \n");
-            System.exit(-1);
-        }
+        Mat src = imagem;
 
         Mat gray = new Mat();
         Imgproc.cvtColor(src, gray, Imgproc.COLOR_BGR2GRAY);
@@ -55,36 +54,16 @@ class HoughCirclesRun {
 }
 public class HoughCircles {
 	
-	private String filename = "";
+	private Mat imagem;
 	
-	public HoughCircles (String filename) {
+	public HoughCircles (Mat imagem) {
 		// Load the native library.
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-		this.filename = filename;
+		this.imagem = imagem;
 	}
-	
-	public static BufferedImage Mat2BufferedImage(Mat mat){
-		BufferedImage bufImage = null;
-		try {  
-		//Encoding the image
-	      MatOfByte matOfByte = new MatOfByte();
-	      Imgcodecs.imencode(".jpg", mat, matOfByte);
-	      //Storing the encoded Mat in a byte array
-	      byte[] byteArray = matOfByte.toArray();
-	      //Preparing the Buffered Image
-	      InputStream in = new ByteArrayInputStream(byteArray);
-	      bufImage = ImageIO.read(in);
-	      
-	    }catch (IOException e) {
-	    	e.printStackTrace();
-	    }
-	    return bufImage;
-	   }
 	
     public BufferedImage detectar() {
     	HoughCirclesRun hcr = new HoughCirclesRun();
-        return Mat2BufferedImage(hcr.run(this.filename));
-        
-        
+        return Corona.Mat2BufferedImage(hcr.run(this.imagem));        
     }
 }
