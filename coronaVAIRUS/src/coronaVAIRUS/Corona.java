@@ -1,5 +1,8 @@
 package coronaVAIRUS;
 
+//TODO
+//Mudar o nome do evento no frameR
+//Criar Botoes
 
 import java.awt.Color;
 import java.awt.EventQueue;
