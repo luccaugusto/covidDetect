@@ -18,9 +18,9 @@ import javax.swing.SwingConstants;
 
 public class FrameR  extends JFrame implements ActionListener{
 
-	private JPanel contentPane,panelMenu, panel;
+	private static JPanel contentPane,panelMenu, panel;
     private JButton buttonLBPH, buttonCC, buttonHough;
-    private Graphics g;
+    private static Graphics g;
 
 	private String corFundo = "#00a388";
 
@@ -39,6 +39,14 @@ public class FrameR  extends JFrame implements ActionListener{
 		});
 	}
 
+	public static Graphics getG() {
+		return g;
+	}
+	
+	public static JPanel getPanel() {
+		return panel;
+	}
+	
 	public FrameR() {
 		//Inicializando Ambiente
 		setTitle("Corona Results");
@@ -127,10 +135,10 @@ public class FrameR  extends JFrame implements ActionListener{
     }
     
     protected void do_buttonHough_actionPerfomed(ActionEvent arg0){
-    	HoughCircles hc = new HoughCircles(Corona.getMatImg());
+    	HoughCircles hc = new HoughCircles(Corona.getMatImg(),Corona.getMatTemplate());
 		BufferedImage detectados = hc.detectar();
 		g = panel.getGraphics();
-		g.drawImage(detectados, 0, 0, null);
+		//g.drawImage(detectados, 0, 0, null);
     }
 
     protected void do_buttonCC_actionPerfomed(ActionEvent arg0){

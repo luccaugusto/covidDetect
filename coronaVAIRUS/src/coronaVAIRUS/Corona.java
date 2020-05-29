@@ -17,6 +17,7 @@ package coronaVAIRUS;
 //			circularidade
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Graphics;
 import java.awt.Point;
@@ -25,14 +26,17 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferInt;
+import java.awt.image.WritableRaster;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Hashtable;
 
 import javax.imageio.ImageIO;
 import javax.swing.GroupLayout;
@@ -46,7 +50,10 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
 import javax.swing.SwingConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileSystemView;
 
 import org.opencv.core.Core;
@@ -55,11 +62,10 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.imgcodecs.Imgcodecs;
 
-public class Corona extends JFrame implements ActionListener{
+public class Corona extends JFrame implements ActionListener ,ChangeListener{
 	// DefiniÃ§Ã£o de variÃ¡veis relacionadas Ã  tela
 	private FrameR frameR = new FrameR();
-	private JPanel contentPane, panelMenu, panelH, panel;
-	private JLabel labelPosX, labelPosY;
+	private JPanel contentPane, panelMenu, panelH, panel, panelSlider;
 	private JButton buttonUpload, buttonZoomP, buttonZoomM, buttonSelecionar, buttonDetectar, buttonCalc;
 	private int x1,y1,x2,y2;
 	private static MouseHandler mouse;
@@ -70,6 +76,7 @@ public class Corona extends JFrame implements ActionListener{
     private int[] histogramaDiscreto = new int[128];
     private int offset = 110; // espaco ocupado pelos botoes
     private int offsetx = 5; // espaco ocupado pelos botoes
+    private int threshold = 190; //limite limiarizacao
 
 	//variavel do retangulo atual
 	Ponto ret1 = new Ponto();
@@ -102,11 +109,17 @@ public class Corona extends JFrame implements ActionListener{
 	private int inicioAH = 80;
 	private int LarguraH = 400;
 	private int AlturaH  = 540;
+	
+	//tamanho do slider
+	private int inicioS = inicioA+Altura+10;
+	private int LarguraS = Largura;
+	private int AlturaS = 60;
 
 	//Imagem carregada
 	private static BufferedImage imagem = null;
 	private static BufferedImage imagemL = null;
 	private static BufferedImage template = null;
+	private static BufferedImage templateL = null;
 
 	//variÃ¡vel do zoom
 	private double Zoom = 0;
@@ -117,6 +130,16 @@ public class Corona extends JFrame implements ActionListener{
 	};
 
 	private Ferramentas ferramentaAtual = Ferramentas.NORMAL;
+	
+	@Override
+	public void stateChanged(ChangeEvent e) {
+        JSlider source = (JSlider) e.getSource();
+        if (!source.getValueIsAdjusting()) {
+            threshold = source.getValue();
+            limiarizacao();
+        }
+		
+	}
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable(){
@@ -237,6 +260,43 @@ public class Corona extends JFrame implements ActionListener{
 		panelH.setBounds(inicioLH,inicioAH,LarguraH,AlturaH);
 		contentPane.add(panelH);
 		panelH.setLayout(null);
+		
+		//Painel com botoes
+		panelSlider = new JPanel();
+		panelSlider.setBackground(Color.WHITE);
+		panelSlider.setBounds(0,inicioS,LarguraS,AlturaS);
+		contentPane.add(panelSlider);
+		
+		
+        int min = 0, max = 255;
+        JSlider slider = new JSlider(JSlider.HORIZONTAL, min, max, threshold);
+        slider.setPaintTicks(true);
+        slider.setPaintLabels(true);
+        // Set the spacing for the minor tick mark
+        slider.setMinorTickSpacing(50);
+        
+        /* Customizing the labels
+        Hashtable<Integer, JLabel> labelTable = new Hashtable<>();
+        labelTable.put(new Integer(100), new JLabel("100"));
+        labelTable.put(new Integer(110), new JLabel("110"));
+        labelTable.put(new Integer(120), new JLabel("120"));
+        labelTable.put(new Integer(130), new JLabel("130"));
+        labelTable.put(new Integer(140), new JLabel("140"));
+        labelTable.put(new Integer(150), new JLabel("150"));
+        labelTable.put(new Integer(160), new JLabel("160"));
+        labelTable.put(new Integer(170), new JLabel("170"));
+        labelTable.put(new Integer(180), new JLabel("180"));
+        labelTable.put(new Integer(190), new JLabel("190"));
+        labelTable.put(new Integer(200), new JLabel("200"));
+
+        slider.setLabelTable(labelTable);
+*/
+        
+        slider.addChangeListener(this);
+
+        panelSlider.add(slider);
+        
+
 
 		mouse  = new MouseHandler();
 	    this.addMouseListener( mouse );
@@ -340,10 +400,7 @@ public class Corona extends JFrame implements ActionListener{
 	}
 
 	protected void do_buttonDetectar_actionPerfomed(ActionEvent arg0){
-        imagemL = imagem;
         limiarizacao();
-        g = panel.getGraphics();
-        g.drawImage(imagemL,0,0,null);
 	} 
 
 	protected void do_buttonCalc_actionPerfomed(ActionEvent arg0){
@@ -406,7 +463,7 @@ public class Corona extends JFrame implements ActionListener{
 	}
 
     void limiarizacao() {
-        int threshold = 160;
+    	imagemL = deepCopy(imagem);
         for (int i = 0; i < imagem.getWidth(); i++) {
             for (int j = 0; j < imagem.getHeight(); j++) {
                 Color color = new Color(imagem.getRGB(i,j));
@@ -416,8 +473,8 @@ public class Corona extends JFrame implements ActionListener{
             }   
         } 
 //		rotulacao();
-
-
+        g = panel.getGraphics();
+        g.drawImage(imagemL,0,0,null);
     }
 
 	void rotulacao() {
@@ -570,6 +627,12 @@ public class Corona extends JFrame implements ActionListener{
 	    return bufImage;
 	   }
 
+	public static BufferedImage deepCopy(BufferedImage bi) {
+	    ColorModel cm = bi.getColorModel();
+	    boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
+	    WritableRaster raster = bi.copyData(bi.getRaster().createCompatibleWritableRaster());
+	    return new BufferedImage(cm, raster, isAlphaPremultiplied, null);
+	}
 	//Classe para lidar com eventos de mouse
 	class MouseHandler extends MouseAdapter
 	{
@@ -609,6 +672,7 @@ public class Corona extends JFrame implements ActionListener{
 			int largura = (ReMax.x-offsetx) - (ReMin.x-offsetx);
 
 			template = imagem.getSubimage(ReMin.x-offsetx, ReMin.y-offset, largura, altura);
+			if(imagemL != null) templateL = imagemL.getSubimage(ReMin.x-offsetx, ReMin.y-offset, largura, altura);
 			
 			ReMin.x = ReMin.y = ReMax.x = ReMax.y = -1;
 		}
@@ -686,5 +750,7 @@ public class Corona extends JFrame implements ActionListener{
 			}
 		}
 	}
+
+
 
 }
