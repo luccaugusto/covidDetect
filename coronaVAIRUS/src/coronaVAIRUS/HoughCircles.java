@@ -28,6 +28,19 @@ class HoughCirclesRun {
 	
 	private int max_diff = 30;
 	
+	BufferedImage limiarizacao(BufferedImage imagem) {
+		BufferedImage imagemL = Corona.deepCopy(imagem);
+        for (int i = 0; i < imagem.getWidth(); i++) {
+            for (int j = 0; j < imagem.getHeight(); j++) {
+                Color color = new Color(imagem.getRGB(i,j));
+                double lum = Luminance.intensity(color);
+                if (lum >= Corona.getThreshold()) imagemL.setRGB(i, j, Color.WHITE.getRGB());
+                else                  imagemL.setRGB(i, j, Color.BLACK.getRGB());
+            }   
+        } 
+        return imagemL;
+    }
+	
 	int[] calculaHistograma(BufferedImage img){
 		int[] hist = new int[256];
         for(int y = 0; y < img.getHeight();y++){
@@ -41,17 +54,20 @@ class HoughCirclesRun {
     }
 	
 	public boolean ehVirus(BufferedImage subimagem, Mat template) {
-		int[] histograma = calculaHistograma(subimagem);
-		int[] histogramaT = calculaHistograma(Corona.Mat2BufferedImage(template));
-		int d = 0;
+		int[] histograma = calculaHistograma(limiarizacao(subimagem));
+		int[] histogramaT = calculaHistograma(limiarizacao(Corona.Mat2BufferedImage(template)));
 		
-		for (int i=0; i < 256; ++i) {
-			if (Math.abs(histograma[i] - histogramaT[i]) < max_diff) {
-				++d;
-			}
-		}
+		int s = histograma[0]+histograma[255];
+		int sT = histogramaT[0]+histogramaT[255];
 
-		return d < 100;
+		double percent = histograma[255]/(double)s * 100;
+		double percentT = histogramaT[255]/(double)sT * 100;
+
+		double d = Math.abs(percent - percentT);
+		System.out.println("Percent subimagem: "+percent);
+		System.out.println("Percent template: " +percentT);
+		System.out.println("Diferenca: "+d);
+		return d > max_diff;
 	}
 	
 	public Mat run(Mat imagem,Mat template) {
@@ -70,9 +86,9 @@ class HoughCirclesRun {
         for (int x = 0; x < circles.cols(); x++) {
             double[] c = circles.get(0, x);
             BufferedImage subimagem = Corona.Mat2BufferedImage(imagem).getSubimage((int)Math.round(c[0]-c[2]), (int)Math.round(c[1]-c[2]), (int)Math.round(2*c[2]), (int)Math.round(2*c[2]));
-            Graphics g = FrameR.getPanel().getGraphics();
-            g.drawImage(subimagem,w,h,null);
-            w+= (int)Math.round(2*c[2]);
+//            Graphics g = FrameR.getPanel().getGraphics();
+//           g.drawImage(subimagem,w,h,null);
+//            w+= (int)Math.round(2*c[2]);
             if (ehVirus(subimagem,template)) {
             	Point center = new Point(Math.round(c[0]), Math.round(c[1]));
             	// circle center

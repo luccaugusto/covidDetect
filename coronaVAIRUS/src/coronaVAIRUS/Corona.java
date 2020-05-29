@@ -76,7 +76,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
     private int[] histogramaDiscreto = new int[128];
     private int offset = 110; // espaco ocupado pelos botoes
     private int offsetx = 5; // espaco ocupado pelos botoes
-    private int threshold = 190; //limite limiarizacao
+    private static int threshold = 190; //limite limiarizacao
 
 	//variavel do retangulo atual
 	Ponto ret1 = new Ponto();
@@ -311,6 +311,10 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 
 	public static Mat getMatTemplate() {
 		return bufferedImage2Mat(template);
+	}
+	
+	public static int getThreshold() {
+		return threshold;
 	}
 	
 	public void actionPerformed(ActionEvent arg0){

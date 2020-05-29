@@ -138,7 +138,7 @@ public class FrameR  extends JFrame implements ActionListener{
     	HoughCircles hc = new HoughCircles(Corona.getMatImg(),Corona.getMatTemplate());
 		BufferedImage detectados = hc.detectar();
 		g = panel.getGraphics();
-		//g.drawImage(detectados, 0, 0, null);
+		g.drawImage(detectados, 0, 0, null);
     }
 
     protected void do_buttonCC_actionPerfomed(ActionEvent arg0){
