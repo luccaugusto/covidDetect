@@ -29,11 +29,8 @@ class HoughCirclesRun {
 	private int max_diff = 30;
 	private int contador = 0;
 	
-	
-
-	
 	public boolean ehVirus(BufferedImage subimagem, double percentT) {
-		int[] histograma = Corona.calculaHistograma2(Corona.limiarizacao(subimagem));
+		int[] histograma = Utils.calculaHistograma2(Utils.limiarizacao(subimagem));
 		
 		int s = histograma[0]+histograma[255];
 
@@ -48,7 +45,7 @@ class HoughCirclesRun {
         Mat src = imagem;
     	
         //calcula histograma e porcentagem de pretos no template
-        int[] histogramaT = Corona.calculaHistograma2(Corona.limiarizacao(Corona.Mat2BufferedImage(template)));
+        int[] histogramaT = Utils.calculaHistograma2(Utils.limiarizacao(Utils.Mat2BufferedImage(template)));
         int sT = histogramaT[0]+histogramaT[255];
         double percentT = histogramaT[255]/(double)sT * 100;
 
@@ -70,7 +67,7 @@ class HoughCirclesRun {
             y_canto = y_canto < 0 ? 0 : y_canto;
             BufferedImage subimagem = null;
             if (x_canto+lado <= imagem.rows() && y_canto+lado <= imagem.cols()) {
-                subimagem = Corona.Mat2BufferedImage(imagem).getSubimage(x_canto,y_canto, lado, lado);
+                subimagem = Utils.Mat2BufferedImage(imagem).getSubimage(x_canto,y_canto, lado, lado);
             }
             
 //            Graphics g = FrameR.getPanel().getGraphics();
@@ -85,7 +82,7 @@ class HoughCirclesRun {
             	int radius = (int) Math.round(c[2]);
             	
             	
-            	Color color = Corona.corAleatoria();
+            	Color color = Utils.corAleatoria();
             	Imgproc.circle(src, center, radius, new Scalar(color.getRed(),color.getGreen(),color.getBlue()), 3, 8, 0 );
         	}
         }
@@ -110,6 +107,6 @@ public class HoughCircles {
 	
     public BufferedImage detectar() {
     	HoughCirclesRun hcr = new HoughCirclesRun();
-        return Corona.Mat2BufferedImage(hcr.run(this.imagem,this.template));        
+        return Utils.Mat2BufferedImage(hcr.run(this.imagem,this.template));        
     }
 }

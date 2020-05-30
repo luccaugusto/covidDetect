@@ -289,24 +289,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
         slider.setPaintLabels(true);
         // Set the spacing for the minor tick mark
         slider.setMinorTickSpacing(50);
-        
-        /* Customizing the labels
-        Hashtable<Integer, JLabel> labelTable = new Hashtable<>();
-        labelTable.put(new Integer(100), new JLabel("100"));
-        labelTable.put(new Integer(110), new JLabel("110"));
-        labelTable.put(new Integer(120), new JLabel("120"));
-        labelTable.put(new Integer(130), new JLabel("130"));
-        labelTable.put(new Integer(140), new JLabel("140"));
-        labelTable.put(new Integer(150), new JLabel("150"));
-        labelTable.put(new Integer(160), new JLabel("160"));
-        labelTable.put(new Integer(170), new JLabel("170"));
-        labelTable.put(new Integer(180), new JLabel("180"));
-        labelTable.put(new Integer(190), new JLabel("190"));
-        labelTable.put(new Integer(200), new JLabel("200"));
-
-        slider.setLabelTable(labelTable);
-*/
-        
+               
         slider.addChangeListener(this);
 
         panelSlider.add(slider);
@@ -314,20 +297,18 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 		mouse  = new MouseHandler();
 	    this.addMouseListener( mouse );
 		this.addMouseMotionListener( mouse );
-
     }
-	
-	
-	public static Mat getMatImg() {
-		return bufferedImage2Mat(imagem);
-	}
-
-	public static Mat getMatTemplate() {
-		return bufferedImage2Mat(template);
-	}
 	
 	public static int getThreshold() {
 		return threshold;
+	}
+	
+	public static Mat getMatImg() {
+		return Utils.bufferedImage2Mat(imagem);
+	}
+	
+	public static Mat getMatTemplate() {
+		return Utils.bufferedImage2Mat(template);
 	}
 	
 	public static Mat getImagemM( ) {
@@ -489,7 +470,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 	}
 
     void limiarizacao() {
-    	imagemL = deepCopy(imagem);
+    	imagemL = Utils.deepCopy(imagem);
         for (int i = 0; i < imagem.getWidth(); i++) {
             for (int j = 0; j < imagem.getHeight(); j++) {
                 Color color = new Color(imagem.getRGB(i,j));
@@ -598,102 +579,8 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 */
     }
 	
-	//to get rainbow, pastel colors
-	public static Color corAleatoria() {
-		Random rand = new Random();
-	    final float saturation = 0.9f;//1.0 for brilliant, 0.0 for dull
-		final float luminance = 1.0f; //1.0 for brighter, 0.0 for black
-		final float hue = rand.nextFloat();	
-		return Color.getHSBColor(hue, saturation, luminance);
-	}
+
 	
-	public static Mat bufferedImage2Mat(BufferedImage sourceImg) {
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-		long millis = System.currentTimeMillis();
-
-	    DataBuffer dataBuffer = sourceImg.getRaster().getDataBuffer();
-	    byte[] imgPixels = null;
-	    Mat imgMat = null;
-
-	    int width = sourceImg.getWidth();
-	    int height = sourceImg.getHeight();
-
-	    if(dataBuffer instanceof DataBufferByte) {
-	            imgPixels = ((DataBufferByte)dataBuffer).getData();
-	    }
-
-	    if(dataBuffer instanceof DataBufferInt) {
-
-	        int byteSize = width * height;
-	        imgPixels = new byte[byteSize*3];
-
-	        int[] imgIntegerPixels = ((DataBufferInt)dataBuffer).getData();
-
-	        for(int p = 0; p < byteSize; p++) {
-	            imgPixels[p*3 + 0] = (byte) ((imgIntegerPixels[p] & 0x00FF0000) >> 16);
-	            imgPixels[p*3 + 1] = (byte) ((imgIntegerPixels[p] & 0x0000FF00) >> 8);
-	            imgPixels[p*3 + 2] = (byte) (imgIntegerPixels[p] & 0x000000FF);
-	        }
-	    }
-
-	    if(imgPixels != null) {
-	        imgMat = new Mat(height, width, CvType.CV_8UC3);
-	        imgMat.put(0, 0, imgPixels);
-	    }
-
-	    return imgMat;
-	}
-	
-	public static BufferedImage limiarizacao(BufferedImage imagem) {
-		BufferedImage imagemL = Corona.deepCopy(imagem);
-        for (int i = 0; i < imagem.getWidth(); i++) {
-            for (int j = 0; j < imagem.getHeight(); j++) {
-                Color color = new Color(imagem.getRGB(i,j));
-                double lum = Luminance.intensity(color);
-                if (lum >= Corona.getThreshold()) imagemL.setRGB(i, j, Color.WHITE.getRGB());
-                else                  imagemL.setRGB(i, j, Color.BLACK.getRGB());
-            }   
-        } 
-        return imagemL;
-    }
-	
-	public static int[] calculaHistograma2(BufferedImage img){
-		int[] hist = new int[256];
-        for(int y = 0; y < img.getHeight();y++){
-            for(int x = 0; x < img.getWidth();x++){
-                Color color = new Color(img.getRGB(x,y));
-                int r = color.getRed();
-                hist[r] += 1;
-            }
-        }
-		return hist;
-    }
-	
-	
-	public static BufferedImage Mat2BufferedImage(Mat mat){
-		BufferedImage bufImage = null;
-		try {  
-		//Encoding the image
-	      MatOfByte matOfByte = new MatOfByte();
-	      Imgcodecs.imencode(".jpg", mat, matOfByte);
-	      //Storing the encoded Mat in a byte array
-	      byte[] byteArray = matOfByte.toArray();
-	      //Preparing the Buffered Image
-	      InputStream in = new ByteArrayInputStream(byteArray);
-	      bufImage = ImageIO.read(in);
-	      
-	    }catch (IOException e) {
-	    	e.printStackTrace();
-	    }
-	    return bufImage;
-	   }
-
-	public static BufferedImage deepCopy(BufferedImage bi) {
-	    ColorModel cm = bi.getColorModel();
-	    boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
-	    WritableRaster raster = bi.copyData(bi.getRaster().createCompatibleWritableRaster());
-	    return new BufferedImage(cm, raster, isAlphaPremultiplied, null);
-	}
 	//Classe para lidar com eventos de mouse
 	class MouseHandler extends MouseAdapter
 	{
@@ -701,12 +588,8 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 		private Ponto ReMin = new Ponto();
 		private Ponto ReMax = new Ponto();
 
-
-
 		private int x1 = -1;
-		private int x2 = -1;
 		private int y1 = -1;
-		private int y2 = -1;
 
 		public void retangulo() {
 			g = panel.getGraphics();
@@ -726,8 +609,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 			ret1.x = ReMin.x;
 			ret1.y = ReMin.y;
 			ret2.x = ReMax.x;
-			ret2.y = ReMax.y;
-			
+			ret2.y = ReMax.y;	
 			
 			int altura = (ReMax.y-offset) - (ReMin.y-offset);
 			int largura = (ReMax.x-offsetx) - (ReMin.x-offsetx);
@@ -810,7 +692,5 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 			}
 		}
 	}
-
-
 
 }

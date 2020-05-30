@@ -27,7 +27,7 @@ class CorrelacaoCruzadaRun{
     private int max_virus = 10;
     
 	public boolean ehVirus(Mat subimagem, double percentT) {
-		int[] histograma = Corona.calculaHistograma2(Corona.limiarizacao(Corona.Mat2BufferedImage(subimagem)));
+		int[] histograma = Utils.calculaHistograma2(Utils.limiarizacao(Utils.Mat2BufferedImage(subimagem)));
 		int s = histograma[0]+histograma[255];
 		double percent = histograma[255]/(double)s * 100;
 		
@@ -44,7 +44,7 @@ class CorrelacaoCruzadaRun{
     	
     	ArrayList<Point> virus = new ArrayList<Point>();
     	
-    	int[] histogramaT = Corona.calculaHistograma2(Corona.limiarizacao(Corona.Mat2BufferedImage(templ)));
+    	int[] histogramaT = Utils.calculaHistograma2(Utils.limiarizacao(Utils.Mat2BufferedImage(templ)));
         int sT = histogramaT[0]+histogramaT[255];
         double percentT = histogramaT[255]/(double)sT * 100;
 
@@ -75,11 +75,11 @@ class CorrelacaoCruzadaRun{
 	        Imgproc.circle(aux, centro, raio, new Scalar(255,255,255),-1);
         }
                 
-        Color color = Corona.corAleatoria();
+        Color color = null;
         for (Point p : virus) {
+        	color = Utils.corAleatoria();
         	Imgproc.rectangle(img, p, new Point(p.x + templ.cols(), p.y + templ.rows()),
         			new Scalar(color.getRed(),color.getGreen(),color.getBlue()), 2, 8, 0);
-        	color = Corona.corAleatoria();
         }
         
         return (BufferedImage) HighGui.toBufferedImage(img);
