@@ -147,7 +147,8 @@ public class FrameR  extends JFrame implements ActionListener{
     }
 
     protected void do_buttonCC_actionPerfomed(ActionEvent arg0){
-    	CorrelacaoCruzada cc = new CorrelacaoCruzada(Corona.getMatImg(), Corona.getMatTemplate());
+    	CorrelacaoCruzada cc = new CorrelacaoCruzada(Corona.getImagemM(), Corona.getTemplateM());
+    	//cc.detectar();
 		BufferedImage detectados = cc.detectar();
 		g = panel.getGraphics();
 		g.drawImage(detectados, 0, 0, null);

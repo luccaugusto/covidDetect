@@ -21,42 +21,19 @@ import java.util.Random;
 
 
 //TODO
-//adaptar para encontrar so os virus parecidos
+//Printar numero de virus
 
 
 class HoughCirclesRun {
 	
 	private int max_diff = 30;
-	final float saturation = 0.9f;//1.0 for brilliant, 0.0 for dull
-	final float luminance = 1.0f; //1.0 for brighter, 0.0 for black
+	private int contador = 0;
 	
-	BufferedImage limiarizacao(BufferedImage imagem) {
-		BufferedImage imagemL = Corona.deepCopy(imagem);
-        for (int i = 0; i < imagem.getWidth(); i++) {
-            for (int j = 0; j < imagem.getHeight(); j++) {
-                Color color = new Color(imagem.getRGB(i,j));
-                double lum = Luminance.intensity(color);
-                if (lum >= Corona.getThreshold()) imagemL.setRGB(i, j, Color.WHITE.getRGB());
-                else                  imagemL.setRGB(i, j, Color.BLACK.getRGB());
-            }   
-        } 
-        return imagemL;
-    }
 	
-	int[] calculaHistograma(BufferedImage img){
-		int[] hist = new int[256];
-        for(int y = 0; y < img.getHeight();y++){
-            for(int x = 0; x < img.getWidth();x++){
-                Color color = new Color(img.getRGB(x,y));
-                int r = color.getRed();
-                hist[r] += 1;
-            }
-        }
-		return hist;
-    }
+
 	
 	public boolean ehVirus(BufferedImage subimagem, double percentT) {
-		int[] histograma = calculaHistograma(limiarizacao(subimagem));
+		int[] histograma = Corona.calculaHistograma2(Corona.limiarizacao(subimagem));
 		
 		int s = histograma[0]+histograma[255];
 
@@ -69,9 +46,9 @@ class HoughCirclesRun {
 	public Mat run(Mat imagem,Mat template) {
         // Load an image
         Mat src = imagem;
-    	Random rand = new Random();
+    	
         //calcula histograma e porcentagem de pretos no template
-        int[] histogramaT = calculaHistograma(limiarizacao(Corona.Mat2BufferedImage(template)));
+        int[] histogramaT = Corona.calculaHistograma2(Corona.limiarizacao(Corona.Mat2BufferedImage(template)));
         int sT = histogramaT[0]+histogramaT[255];
         double percentT = histogramaT[255]/(double)sT * 100;
 
@@ -100,16 +77,15 @@ class HoughCirclesRun {
 //           g.drawImage(subimagem,w,h,null);
 //            w+= (int)Math.round(2*c[2]);
             if (subimagem != null && ehVirus(subimagem,percentT)) {
+            	contador++;
             	Point center = new Point(Math.round(c[0]), Math.round(c[1]));
             	// circle center
             	Imgproc.circle(src, center, 1, new Scalar(0,100,100), 3, 8, 0 );
             	// circle outline
             	int radius = (int) Math.round(c[2]);
             	
-            	//to get rainbow, pastel colors
-            	final float hue = rand.nextFloat();	
-            	Color color = Color.getHSBColor(hue, saturation, luminance);
-
+            	
+            	Color color = Corona.corAleatoria();
             	Imgproc.circle(src, center, radius, new Scalar(color.getRed(),color.getGreen(),color.getBlue()), 3, 8, 0 );
         	}
         }

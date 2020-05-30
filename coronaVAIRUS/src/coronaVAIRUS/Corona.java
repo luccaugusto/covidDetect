@@ -9,10 +9,12 @@ package coronaVAIRUS;
 // Detectar e contar quantos virus existem na imagem
 // Mostrar numero de virus
 // colorir virus com cores diferentes
+// Mover funcao de colorir para o utils
 // indicar o total de virus
 // Slider max_diff
 //		OK Limiarizacao
 //		OK Eliptica de Hough
+//		Corrigir erro de Mat channels pra imagem 2 no hough channels
 //		LBPH
 // 		Correlacao Cruzada
 //		Descritor de haralick
@@ -40,6 +42,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Random;
 
 import javax.imageio.ImageIO;
 import javax.swing.GroupLayout;
@@ -80,6 +83,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
     private int offset = 110; // espaco ocupado pelos botoes
     private int offsetx = 5; // espaco ocupado pelos botoes
     private static int threshold = 190; //limite limiarizacao
+
 
 	//variavel do retangulo atual
 	Ponto ret1 = new Ponto();
@@ -126,6 +130,9 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 	private static BufferedImage imagemL = null;
 	private static BufferedImage template = null;
 	private static BufferedImage templateL = null;
+	
+    private static Mat imagemM = null;
+    private static Mat templateM = null;
 
 	//variÃ¡vel do zoom
 	private double Zoom = 0;
@@ -151,6 +158,8 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 		EventQueue.invokeLater(new Runnable(){
 			public void run(){
 				try{
+					// load the native OpenCV library
+			        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 					Corona frame = new Corona();
                     frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 					frame.setVisible(true);
@@ -302,8 +311,6 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 
         panelSlider.add(slider);
         
-
-
 		mouse  = new MouseHandler();
 	    this.addMouseListener( mouse );
 		this.addMouseMotionListener( mouse );
@@ -321,6 +328,14 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 	
 	public static int getThreshold() {
 		return threshold;
+	}
+	
+	public static Mat getImagemM( ) {
+		return imagemM;
+	}
+	
+	public static Mat getTemplateM() {
+		return templateM;
 	}
 	
 	public void actionPerformed(ActionEvent arg0){
@@ -352,6 +367,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
         try {
             String filename = selectedFile.getAbsolutePath();
             imagem = ImageIO.read(new File(filename));   
+            imagemM = Imgcodecs.imread(filename);
 			newImageWidth=imagem.getWidth();
 			newImageHeight=imagem.getHeight();
             g = panel.getGraphics();
@@ -582,6 +598,15 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 */
     }
 	
+	//to get rainbow, pastel colors
+	public static Color corAleatoria() {
+		Random rand = new Random();
+	    final float saturation = 0.9f;//1.0 for brilliant, 0.0 for dull
+		final float luminance = 1.0f; //1.0 for brighter, 0.0 for black
+		final float hue = rand.nextFloat();	
+		return Color.getHSBColor(hue, saturation, luminance);
+	}
+	
 	public static Mat bufferedImage2Mat(BufferedImage sourceImg) {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 		long millis = System.currentTimeMillis();
@@ -618,6 +643,32 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 
 	    return imgMat;
 	}
+	
+	public static BufferedImage limiarizacao(BufferedImage imagem) {
+		BufferedImage imagemL = Corona.deepCopy(imagem);
+        for (int i = 0; i < imagem.getWidth(); i++) {
+            for (int j = 0; j < imagem.getHeight(); j++) {
+                Color color = new Color(imagem.getRGB(i,j));
+                double lum = Luminance.intensity(color);
+                if (lum >= Corona.getThreshold()) imagemL.setRGB(i, j, Color.WHITE.getRGB());
+                else                  imagemL.setRGB(i, j, Color.BLACK.getRGB());
+            }   
+        } 
+        return imagemL;
+    }
+	
+	public static int[] calculaHistograma2(BufferedImage img){
+		int[] hist = new int[256];
+        for(int y = 0; y < img.getHeight();y++){
+            for(int x = 0; x < img.getWidth();x++){
+                Color color = new Color(img.getRGB(x,y));
+                int r = color.getRed();
+                hist[r] += 1;
+            }
+        }
+		return hist;
+    }
+	
 	
 	public static BufferedImage Mat2BufferedImage(Mat mat){
 		BufferedImage bufImage = null;
@@ -682,6 +733,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 			int largura = (ReMax.x-offsetx) - (ReMin.x-offsetx);
 
 			template = imagem.getSubimage(ReMin.x-offsetx, ReMin.y-offset, largura, altura);
+			templateM = imagemM.submat(ReMin.y-offset,ReMax.y-offset,ReMin.x-offsetx,ReMax.x-offsetx);
 			if(imagemL != null) templateL = imagemL.getSubimage(ReMin.x-offsetx, ReMin.y-offset, largura, altura);
 			
 			ReMin.x = ReMin.y = ReMax.x = ReMax.y = -1;
