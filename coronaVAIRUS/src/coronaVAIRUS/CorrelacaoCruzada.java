@@ -29,23 +29,24 @@ import org.opencv.imgproc.Imgproc;
 class CorrelacaoCruzadaRun{
     Boolean use_mask = false;
     Mat img = new Mat(), templ = new Mat();
-    Mat mask = new Mat();
-    int match_method = Imgproc.TM_SQDIFF;
+    int match_method = Imgproc.TM_SQDIFF_NORMED;
     JLabel imgDisplay = new JLabel(), resultDisplay = new JLabel();
     
-    public BufferedImage run(Mat img, Mat templ) {
+    public BufferedImage run (Mat img, Mat templ) {
     	Mat result = new Mat();
         Mat img_display = new Mat();
-        img.copyTo(img_display);
+        //img.copyTo(img_display);
+        //Mat gray = new Mat();
+        Mat templ_gray = new Mat();
+        Imgproc.cvtColor(img, img_display, Imgproc.COLOR_BGR2GRAY);
+        Imgproc.cvtColor(templ, templ_gray, Imgproc.COLOR_BGR2GRAY);
+        
         int result_cols = img.cols() - templ.cols() + 1;
         int result_rows = img.rows() - templ.rows() + 1;
         result.create(result_rows, result_cols, CvType.CV_32FC1);
-        Boolean method_accepts_mask = (Imgproc.TM_SQDIFF == match_method || match_method == Imgproc.TM_CCORR_NORMED);
-        if (use_mask && method_accepts_mask) {
-            Imgproc.matchTemplate(img, templ, result, match_method, mask);
-        } else {
-            Imgproc.matchTemplate(img, templ, result, match_method);
-        }
+        
+        Imgproc.matchTemplate(img, templ, result, match_method);
+
         Core.normalize(result, result, 0, 1, Core.NORM_MINMAX, -1, new Mat());
         Point matchLoc;
         Core.MinMaxLocResult mmr = Core.minMaxLoc(result);
@@ -54,6 +55,9 @@ class CorrelacaoCruzadaRun{
         } else {
             matchLoc = mmr.maxLoc;
         }
+        
+        
+        
         Imgproc.rectangle(img_display, matchLoc, new Point(matchLoc.x + templ.cols(), matchLoc.y + templ.rows()),
                 new Scalar(0, 0, 0), 2, 8, 0);
         Imgproc.rectangle(result, matchLoc, new Point(matchLoc.x + templ.cols(), matchLoc.y + templ.rows()),

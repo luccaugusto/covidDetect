@@ -17,7 +17,7 @@ import org.opencv.core.Point;
 import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
-
+import java.util.Random;
 
 
 //TODO
@@ -27,6 +27,8 @@ import org.opencv.imgproc.Imgproc;
 class HoughCirclesRun {
 	
 	private int max_diff = 30;
+	final float saturation = 0.9f;//1.0 for brilliant, 0.0 for dull
+	final float luminance = 1.0f; //1.0 for brighter, 0.0 for black
 	
 	BufferedImage limiarizacao(BufferedImage imagem) {
 		BufferedImage imagemL = Corona.deepCopy(imagem);
@@ -53,49 +55,62 @@ class HoughCirclesRun {
 		return hist;
     }
 	
-	public boolean ehVirus(BufferedImage subimagem, Mat template) {
+	public boolean ehVirus(BufferedImage subimagem, double percentT) {
 		int[] histograma = calculaHistograma(limiarizacao(subimagem));
-		int[] histogramaT = calculaHistograma(limiarizacao(Corona.Mat2BufferedImage(template)));
 		
 		int s = histograma[0]+histograma[255];
-		int sT = histogramaT[0]+histogramaT[255];
 
 		double percent = histograma[255]/(double)s * 100;
-		double percentT = histogramaT[255]/(double)sT * 100;
-
+		
 		double d = Math.abs(percent - percentT);
-		System.out.println("Percent subimagem: "+percent);
-		System.out.println("Percent template: " +percentT);
-		System.out.println("Diferenca: "+d);
 		return d > max_diff;
 	}
 	
 	public Mat run(Mat imagem,Mat template) {
         // Load an image
         Mat src = imagem;
+    	Random rand = new Random();
+        //calcula histograma e porcentagem de pretos no template
+        int[] histogramaT = calculaHistograma(limiarizacao(Corona.Mat2BufferedImage(template)));
+        int sT = histogramaT[0]+histogramaT[255];
+        double percentT = histogramaT[255]/(double)sT * 100;
 
+        int max_radius = (int)(((template.cols()/2 + template.rows()/2) / 2) * 1.7);
         Mat gray = new Mat();
         Imgproc.cvtColor(src, gray, Imgproc.COLOR_BGR2GRAY);
-        Imgproc.medianBlur(gray, gray, 5);
+        Imgproc.medianBlur(gray, gray, 7);
         Mat circles = new Mat();
         Imgproc.HoughCircles(gray, circles, Imgproc.HOUGH_GRADIENT, 1.0,
                 (double)gray.rows()/16, // change this value to detect circles with different distances to each other
-                100.0, 30.0, 1, 30); // change the last two parameters
+                100.0, 30.0, 1, max_radius); // change the last two parameters
                 // (min_radius & max_radius) to detect larger circles
-        int w=0,h=0;
         for (int x = 0; x < circles.cols(); x++) {
             double[] c = circles.get(0, x);
-            BufferedImage subimagem = Corona.Mat2BufferedImage(imagem).getSubimage((int)Math.round(c[0]-c[2]), (int)Math.round(c[1]-c[2]), (int)Math.round(2*c[2]), (int)Math.round(2*c[2]));
+            int x_canto= (int)Math.round(c[0]-c[2]), 
+            	y_canto= (int)Math.round(c[1]-c[2]),
+            	lado   = (int)Math.round(2*c[2]);
+            x_canto = x_canto < 0 ? 0 : x_canto;
+            y_canto = y_canto < 0 ? 0 : y_canto;
+            BufferedImage subimagem = null;
+            if (x_canto+lado <= imagem.rows() && y_canto+lado <= imagem.cols()) {
+                subimagem = Corona.Mat2BufferedImage(imagem).getSubimage(x_canto,y_canto, lado, lado);
+            }
+            
 //            Graphics g = FrameR.getPanel().getGraphics();
 //           g.drawImage(subimagem,w,h,null);
 //            w+= (int)Math.round(2*c[2]);
-            if (ehVirus(subimagem,template)) {
+            if (subimagem != null && ehVirus(subimagem,percentT)) {
             	Point center = new Point(Math.round(c[0]), Math.round(c[1]));
             	// circle center
             	Imgproc.circle(src, center, 1, new Scalar(0,100,100), 3, 8, 0 );
             	// circle outline
             	int radius = (int) Math.round(c[2]);
-            	Imgproc.circle(src, center, radius, new Scalar(255,0,255), 3, 8, 0 );
+            	
+            	//to get rainbow, pastel colors
+            	final float hue = rand.nextFloat();	
+            	Color color = Color.getHSBColor(hue, saturation, luminance);
+
+            	Imgproc.circle(src, center, radius, new Scalar(color.getRed(),color.getGreen(),color.getBlue()), 3, 8, 0 );
         	}
         }
 

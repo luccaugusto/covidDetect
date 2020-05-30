@@ -720,8 +720,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 		public void mousePressed( MouseEvent e ){
 			x1 = e.getX();
 			y1 = e.getY();
-
-			if (ferramentaAtual == Ferramentas.SELECAO) {
+			if (y1 > offset && ferramentaAtual == Ferramentas.SELECAO) {
 				if (ReMin.x == -1) {
 					ReMin.x = x1;
 					ReMin.y = y1;
@@ -740,7 +739,6 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 						ReMin.y = aux;
 					}
 
-					
 					retangulo();
 					//selecionar(new Ponto(ReMin.x,ReMin.y),new Ponto(ReMax.x,ReMax.y));
 				}
