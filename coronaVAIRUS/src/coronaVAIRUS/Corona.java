@@ -78,24 +78,24 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 	private Graphics g;
 	private Point mouseReleased, mousePressed,mousePos;
 	private JColorChooser Cores;
-    private int[] histograma = new int[256];
-    private int[] histogramaDiscreto = new int[128];
-    private int offset = 110; // espaco ocupado pelos botoes
-    private int offsetx = 5; // espaco ocupado pelos botoes
-    private static int threshold = 190; //limite limiarizacao
+	private int[] histograma = new int[256];
+	private int[] histogramaDiscreto = new int[128];
+	private int offset = 110; // espaco ocupado pelos botoes
+	private int offsetx = 5; // espaco ocupado pelos botoes
+	private static int threshold = 190; //limite limiarizacao
 
 
 	//variavel do retangulo atual
 	Ponto ret1 = new Ponto();
 	Ponto ret2 = new Ponto();
-    
-    private int newImageWidth;
+
+	private int newImageWidth;
 	private int newImageHeight;
 
 	private String corFundo = "#00a388";
 
 	//upload
-    private Icon up   = new  ImageIcon(getClass().getResource("upload.png"));
+	private Icon up   = new  ImageIcon(getClass().getResource("upload.png"));
 	//zoom +
 	private Icon zp   = new  ImageIcon(getClass().getResource("zoom_mais.png"));
 	//zoom -
@@ -106,7 +106,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 	private Icon de   = new  ImageIcon(getClass().getResource("detectar.png"));
 	//limiarizar
 	private Icon li   = new  ImageIcon(getClass().getResource("limiarizar.png"));
-	
+
 
 	//Tamanho do Canvas
 	private int inicioL = 0;
@@ -119,7 +119,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 	private int inicioAH = 80;
 	private int LarguraH = 400;
 	private int AlturaH  = 540;
-	
+
 	//tamanho do slider
 	private int inicioS = inicioA+Altura+10;
 	private int LarguraS = Largura;
@@ -130,28 +130,28 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 	private static BufferedImage imagemL = null;
 	private static BufferedImage template = null;
 	private static BufferedImage templateL = null;
-	
-    private static Mat imagemM = null;
-    private static Mat templateM = null;
+
+	private static Mat imagemM = null;
+	private static Mat templateM = null;
 
 	//variÃ¡vel do zoom
 	private double Zoom = 0;
 
 	private enum Ferramentas {
 		NORMAL,
-        SELECAO,
+		SELECAO,
 	};
 
 	private Ferramentas ferramentaAtual = Ferramentas.NORMAL;
-	
+
 	@Override
 	public void stateChanged(ChangeEvent e) {
-        JSlider source = (JSlider) e.getSource();
-        if (!source.getValueIsAdjusting()) {
-            threshold = source.getValue();
-            limiarizacao();
-        }
-		
+		JSlider source = (JSlider) e.getSource();
+		if (!source.getValueIsAdjusting()) {
+			threshold = source.getValue();
+			limiarizacao();
+		}
+
 	}
 
 	public static void main(String[] args) {
@@ -159,9 +159,9 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 			public void run(){
 				try{
 					// load the native OpenCV library
-			        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+					System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 					Corona frame = new Corona();
-                    frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+					frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 					frame.setVisible(true);
 				} catch (Exception e){
 					e.printStackTrace();
@@ -187,7 +187,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 		//botao upload
 		buttonUpload = new JButton();
 		buttonUpload.addActionListener((ActionListener) this);
-        buttonUpload.setIcon(up);
+		buttonUpload.setIcon(up);
 		buttonUpload.setBackground(Color.decode(corFundo));
 		buttonUpload.setHorizontalTextPosition(SwingConstants.CENTER); 
 
@@ -244,7 +244,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 					.addGap(10)
 					.addComponent(buttonCalc)
 					)
-			);
+				);
 
 		g1_panelMenu.setVerticalGroup(
 				g1_panelMenu.createParallelGroup(Alignment.CENTER)
@@ -258,8 +258,8 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 						.addComponent(buttonDetectar)
 						.addComponent(buttonCalc)
 						)
-				)
-		);
+					)
+				);
 		panelMenu.setLayout(g1_panelMenu);
 
 		//Painel de imagem
@@ -275,57 +275,57 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 		panelH.setBounds(inicioLH,inicioAH,LarguraH,AlturaH);
 		contentPane.add(panelH);
 		panelH.setLayout(null);
-		
+
 		//Painel com botoes
 		panelSlider = new JPanel();
 		panelSlider.setBackground(Color.WHITE);
 		panelSlider.setBounds(0,inicioS,LarguraS,AlturaS);
 		contentPane.add(panelSlider);
-		
-		
-        int min = 0, max = 255;
-        JSlider slider = new JSlider(JSlider.HORIZONTAL, min, max, threshold);
-        slider.setPaintTicks(true);
-        slider.setPaintLabels(true);
-        // Set the spacing for the minor tick mark
-        slider.setMinorTickSpacing(50);
-               
-        slider.addChangeListener(this);
 
-        panelSlider.add(slider);
-        
+
+		int min = 0, max = 255;
+		JSlider slider = new JSlider(JSlider.HORIZONTAL, min, max, threshold);
+		slider.setPaintTicks(true);
+		slider.setPaintLabels(true);
+		// Set the spacing for the minor tick mark
+		slider.setMinorTickSpacing(50);
+
+		slider.addChangeListener(this);
+
+		panelSlider.add(slider);
+
 		mouse  = new MouseHandler();
-	    this.addMouseListener( mouse );
+		this.addMouseListener( mouse );
 		this.addMouseMotionListener( mouse );
-    }
-	
+	}
+
 	public static int getThreshold() {
 		return threshold;
 	}
-	
+
 	public static Mat getMatImg() {
 		return Utils.bufferedImage2Mat(imagem);
 	}
-	
+
 	public static Mat getMatTemplate() {
 		return Utils.bufferedImage2Mat(template);
 	}
-	
+
 	public static Mat getImagemM( ) {
 		return imagemM;
 	}
-	
+
 	public static Mat getTemplateM() {
 		return templateM;
 	}
-	
+
 	public void actionPerformed(ActionEvent arg0){
 		if(arg0.getSource() == buttonUpload){
 			do_buttonUpload_actionPerfomed(arg0);
 		} else if(arg0.getSource() == buttonSelecionar){
 			do_buttonSelecionar_actionPerfomed(arg0);
 		} else if(arg0.getSource() == buttonZoomP){
-				do_buttonZoomP_actionPerfomed(arg0);
+			do_buttonZoomP_actionPerfomed(arg0);
 		} else if(arg0.getSource() == buttonZoomM){
 			do_buttonZoomM_actionPerfomed(arg0);
 		} else if(arg0.getSource() == buttonDetectar){
@@ -336,47 +336,47 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 	}
 
 	protected void do_buttonUpload_actionPerfomed(ActionEvent arg0){
-        panel.repaint();
-        panelH.repaint();
+		panel.repaint();
+		panelH.repaint();
 		zeraHistogramas();
-        JFileChooser jfc = new JFileChooser(FileSystemView.getFileSystemView());
-        File selectedFile= null;
-        int returnValue = jfc.showOpenDialog(null);
-	    if (returnValue == JFileChooser.APPROVE_OPTION) {
-		    selectedFile = jfc.getSelectedFile();
+		JFileChooser jfc = new JFileChooser(FileSystemView.getFileSystemView());
+		File selectedFile= null;
+		int returnValue = jfc.showOpenDialog(null);
+		if (returnValue == JFileChooser.APPROVE_OPTION) {
+			selectedFile = jfc.getSelectedFile();
 		}
-        try {
-            String filename = selectedFile.getAbsolutePath();
-            imagem = ImageIO.read(new File(filename));   
-            imagemM = Imgcodecs.imread(filename);
+		try {
+			String filename = selectedFile.getAbsolutePath();
+			imagem = ImageIO.read(new File(filename));   
+			imagemM = Imgcodecs.imread(filename);
 			newImageWidth=imagem.getWidth();
 			newImageHeight=imagem.getHeight();
-            g = panel.getGraphics();
-            g.drawImage(imagem,0,0, null); 
-            calculaHistograma(imagem);  
-                      
-        } catch (IOException e) {
-            
-        }
+			g = panel.getGraphics();
+			g.drawImage(imagem,0,0, null); 
+			calculaHistograma(imagem);  
+
+		} catch (IOException e) {
+
+		}
 	} 
-	
+
 	//init_offset = ((h * y0) + x) bytes
 	//offset = width - x1 + width - x0
 	//ateh height-y1
 
 	protected void do_buttonSelecionar_actionPerfomed(ActionEvent arg0){
-            ferramentaAtual = Ferramentas.SELECAO;
+		ferramentaAtual = Ferramentas.SELECAO;
 	}
 
 	protected void do_buttonZoomP_actionPerfomed(ActionEvent arg0){
-        panel.repaint();
+		panel.repaint();
 		String zoomLevel;
 		zoomLevel = JOptionPane.showInputDialog("Digite a porcentagem do zoom:");
 		if ((zoomLevel != null) && (zoomLevel.length() > 0)) {    
 			try {
 				zoomLevel.replaceAll( "," , "." );
 				Zoom = Double.parseDouble(zoomLevel);
-                Zoom = (Zoom/100)+1;
+				Zoom = (Zoom/100)+1;
 				//ferramenta_atual = Ferramentas.ROTACAO;
 				//mouse.rotation();
 			}catch(Exception e){
@@ -388,14 +388,14 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 	}
 
 	protected void do_buttonZoomM_actionPerfomed(ActionEvent arg0){
-        panel.repaint();
+		panel.repaint();
 		String zoomLevel;
 		zoomLevel = JOptionPane.showInputDialog("Digite a porcentagem do zoom:");
 		if ((zoomLevel != null) && (zoomLevel.length() > 0)) {    
 			try {
 				zoomLevel.replaceAll( "," , "." );
 				Zoom = Double.parseDouble(zoomLevel);
-                Zoom = 1-(Zoom/100);
+				Zoom = 1-(Zoom/100);
 				//ferramenta_atual = Ferramentas.ROTACAO;
 				//mouse.rotation();
 
@@ -407,7 +407,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 	}
 
 	protected void do_buttonDetectar_actionPerfomed(ActionEvent arg0){
-        limiarizacao();
+		limiarizacao();
 	} 
 
 	protected void do_buttonCalc_actionPerfomed(ActionEvent arg0){
@@ -442,17 +442,17 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 		}
 	}
 
-    void calculaHistograma(BufferedImage img){
-        for(int y = 0; y < img.getHeight();y++){
-            for(int x = 0; x < img.getWidth();x++){
-                Color color = new Color(img.getRGB(x,y));
-                int r = color.getRed();
-                histograma[r] += 1;
-            }
-        }
+	void calculaHistograma(BufferedImage img){
+		for(int y = 0; y < img.getHeight();y++){
+			for(int x = 0; x < img.getWidth();x++){
+				Color color = new Color(img.getRGB(x,y));
+				int r = color.getRed();
+				histograma[r] += 1;
+			}
+		}
 		discretizaHistograma();
 		exibeHistograma();
-    }
+	}
 
 	void exibeHistograma() {
 		//ponto inicial das linhas, move da esquerda para a direita no eixo x;
@@ -469,20 +469,20 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 		}
 	}
 
-    void limiarizacao() {
-    	imagemL = Utils.deepCopy(imagem);
-        for (int i = 0; i < imagem.getWidth(); i++) {
-            for (int j = 0; j < imagem.getHeight(); j++) {
-                Color color = new Color(imagem.getRGB(i,j));
-                double lum = Luminance.intensity(color);
-                if (lum >= threshold) imagemL.setRGB(i, j, Color.WHITE.getRGB());
-                else                  imagemL.setRGB(i, j, Color.BLACK.getRGB());
-            }   
-        } 
-//		rotulacao();
-        g = panel.getGraphics();
-        g.drawImage(imagemL,0,0,null);
-    }
+	void limiarizacao() {
+		imagemL = Utils.deepCopy(imagem);
+		for (int i = 0; i < imagem.getWidth(); i++) {
+			for (int j = 0; j < imagem.getHeight(); j++) {
+				Color color = new Color(imagem.getRGB(i,j));
+				double lum = Luminance.intensity(color);
+				if (lum >= threshold) imagemL.setRGB(i, j, Color.WHITE.getRGB());
+				else                  imagemL.setRGB(i, j, Color.BLACK.getRGB());
+			}   
+		} 
+		//		rotulacao();
+		g = panel.getGraphics();
+		g.drawImage(imagemL,0,0,null);
+	}
 
 	void rotulacao() {
 		int w = imagemL.getWidth();
@@ -531,10 +531,10 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 					if (A+B+C+D == -4) {
 						rotulos[i][j] = ultimo_rot;
 						ultimo_rot++;
-					//senao se forem iguais atribui o mesmo rotulo
+						//senao se forem iguais atribui o mesmo rotulo
 					} else if(A == B && B == C && C == D){
 						rotulos[i][j] = A;
-					//se forem diferentes coloca os rotulos numa tabela de equivalencias
+						//se forem diferentes coloca os rotulos numa tabela de equivalencias
 					}else{
 						int[] aux = {A,B};
 						int[] aux1 = {A,C};
@@ -562,25 +562,25 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 
 	//Zoom
 	void redimensionarImagem() { 
-        newImageWidth =  (int)(newImageWidth * Zoom);
+		newImageWidth =  (int)(newImageWidth * Zoom);
 		newImageHeight = (int)(newImageHeight * Zoom);
-        g = panel.getGraphics();
-        g.drawImage(imagem, 0, 0, newImageWidth , newImageHeight , null);
-/*
-		int newImageWidth = (int)(imagem.getWidth() * Zoom);
-		int newImageHeight = (int)(imagem.getHeight() * Zoom);
-		BufferedImage resizedImage = new BufferedImage(newImageWidth , newImageHeight, BufferedImage.TYPE_INT_ARGB);
-		Graphics2D g = resizedImage.createGraphics();
+		g = panel.getGraphics();
 		g.drawImage(imagem, 0, 0, newImageWidth , newImageHeight , null);
-		g.dispose();
-		imagem = resizedImage;
-		calculaHistograma(imagem);
+		/*
+		   int newImageWidth = (int)(imagem.getWidth() * Zoom);
+		   int newImageHeight = (int)(imagem.getHeight() * Zoom);
+		   BufferedImage resizedImage = new BufferedImage(newImageWidth , newImageHeight, BufferedImage.TYPE_INT_ARGB);
+		   Graphics2D g = resizedImage.createGraphics();
+		   g.drawImage(imagem, 0, 0, newImageWidth , newImageHeight , null);
+		   g.dispose();
+		   imagem = resizedImage;
+		   calculaHistograma(imagem);
 
 */
-    }
-	
+	}
 
-	
+
+
 	//Classe para lidar com eventos de mouse
 	class MouseHandler extends MouseAdapter
 	{
@@ -593,7 +593,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 
 		public void retangulo() {
 			g = panel.getGraphics();
-        	g.drawImage(imagem,0,0,newImageWidth,newImageHeight,null);
+			g.drawImage(imagem,0,0,newImageWidth,newImageHeight,null);
 			//selecionar(ReMin,ReMax);
 			g.setColor(Color.RED);
 
@@ -605,19 +605,19 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 			g.drawLine(ReMin.x-offsetx,ReMin.y-offset,ReMax.x-offsetx,ReMin.y-offset);
 			//reta direita
 			g.drawLine(ReMax.x-offsetx,ReMin.y-offset,ReMax.x-offsetx,ReMax.y-offset);
-			
+
 			ret1.x = ReMin.x;
 			ret1.y = ReMin.y;
 			ret2.x = ReMax.x;
 			ret2.y = ReMax.y;	
-			
+
 			int altura = (ReMax.y-offset) - (ReMin.y-offset);
 			int largura = (ReMax.x-offsetx) - (ReMin.x-offsetx);
 
 			template = imagem.getSubimage(ReMin.x-offsetx, ReMin.y-offset, largura, altura);
 			templateM = imagemM.submat(ReMin.y-offset,ReMax.y-offset,ReMin.x-offsetx,ReMax.x-offsetx);
 			if(imagemL != null) templateL = imagemL.getSubimage(ReMin.x-offsetx, ReMin.y-offset, largura, altura);
-			
+
 			ReMin.x = ReMin.y = ReMax.x = ReMax.y = -1;
 		}
 
@@ -644,7 +644,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 					g.drawLine(inicioL,i,Largura,i);
 				}
 			}
-			
+
 		}
 
 
