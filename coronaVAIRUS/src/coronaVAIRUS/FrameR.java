@@ -21,10 +21,15 @@ public class FrameR  extends JFrame implements ActionListener{
 	private static JPanel contentPane,panelMenu, panel;
     private JButton buttonLBPH, buttonCC, buttonHough;
     private static Graphics g;
-
+    
+  //correlacao cruzada
+  	private Icon cc  = new  ImageIcon(getClass().getResource("correlacao_cruzada.png"));
+  	//hough circles
+  	private Icon lb  = new  ImageIcon(getClass().getResource("lbph.png"));
+  //hough circles
+  	private Icon ihc  = new  ImageIcon(getClass().getResource("hc.png"));
+  	
 	private String corFundo = "#00a388";
-
-	private Icon lbphI   = new  ImageIcon(getClass().getResource("detectar.png"));
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable(){
@@ -66,21 +71,21 @@ public class FrameR  extends JFrame implements ActionListener{
 		//botao Hough 
 		buttonHough = new JButton();
 		buttonHough.addActionListener(this);
-        buttonHough .setIcon(lbphI);
+        buttonHough .setIcon(ihc);
 		buttonHough .setBackground(Color.decode(corFundo));
 		buttonHough .setHorizontalTextPosition(SwingConstants.CENTER); 
 		
 		//botao CC
 		buttonCC = new JButton();
 		buttonCC.addActionListener(this);
-		buttonCC.setIcon(lbphI);
+		buttonCC.setIcon(cc);
 		buttonCC.setBackground(Color.decode(corFundo));
 		buttonCC.setHorizontalTextPosition(SwingConstants.CENTER); 
 		
 		//botao LBPH
 		buttonLBPH = new JButton();
 		buttonLBPH.addActionListener(this);
-        buttonLBPH.setIcon(lbphI);
+        buttonLBPH.setIcon(lb);
 		buttonLBPH.setBackground(Color.decode(corFundo));
 		buttonLBPH.setHorizontalTextPosition(SwingConstants.CENTER); 
 

@@ -5,11 +5,14 @@ package coronaVAIRUS;
 // OK Exibir imagem com opcao de zoom e histograma
 // OK extrair amostra da imagem atravez de um retangulo vermelho
 // OK Mudar o nome do evento no frameR
-// Criar icones Botoes
-// Detectar e contar quantos virus existem na imagem, visualizar em outra janela com a mesma imagem marcada com uma cor pra cada virus
+// OK Criar icones Botoes
+// Detectar e contar quantos virus existem na imagem
+// Mostrar numero de virus
+// colorir virus com cores diferentes
 // indicar o total de virus
+// Slider max_diff
 //		OK Limiarizacao
-//		Eliptica de Hough
+//		OK Eliptica de Hough
 //		LBPH
 // 		Correlacao Cruzada
 //		Descritor de haralick
@@ -97,6 +100,9 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 	private Icon se   = new  ImageIcon(getClass().getResource("selecionar.png"));
 	//detectar
 	private Icon de   = new  ImageIcon(getClass().getResource("detectar.png"));
+	//limiarizar
+	private Icon li   = new  ImageIcon(getClass().getResource("limiarizar.png"));
+	
 
 	//Tamanho do Canvas
 	private int inicioL = 0;
@@ -197,10 +203,10 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 		buttonZoomM.setBackground(Color.decode(corFundo));
 		buttonZoomM.setHorizontalTextPosition(SwingConstants.CENTER); 
 
-		//botÃ£o detectar virus
+		//botÃ£o limiarizar virus
 		buttonDetectar = new JButton();
 		buttonDetectar.addActionListener((ActionListener) this);
-		buttonDetectar.setIcon(de);
+		buttonDetectar.setIcon(li);
 		buttonDetectar.setBackground(Color.decode(corFundo));
 		buttonDetectar.setHorizontalTextPosition(SwingConstants.CENTER);
 
