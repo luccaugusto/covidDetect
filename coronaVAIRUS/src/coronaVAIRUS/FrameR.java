@@ -7,6 +7,7 @@ import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.util.Hashtable;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -22,8 +23,8 @@ import javax.swing.JSlider;
 import javax.swing.SwingConstants;
 
 //TODO
-//Slider max_diff
-//Slider max_virus
+//OK Slider max_diff
+//OK Slider max_virus
 //OK Printar numero de virus
 //OK adaptar para encontrar multiplos virus
 
@@ -32,7 +33,7 @@ public class FrameR  extends JFrame implements ActionListener, ChangeListener{
 
 	private static JPanel contentPane,panelMenu, panel, panelS;
 	private JButton buttonLBPH, buttonCC, buttonHough;
-	private JLabel virus;
+	private JLabel virus, labelMaxDiff, labelMaxVirus;
 	private static Graphics g;
 	private static int numVirus = 0;
 	private static int maxDiff = 0;
@@ -41,8 +42,8 @@ public class FrameR  extends JFrame implements ActionListener, ChangeListener{
 	static int minSlider = 0;
 	static int maxSlider = 50;
 	static int maxSliderCC = 0;
-	JSlider slider = new JSlider(JSlider.VERTICAL, minSlider, maxSlider, maxDiff);
-	JSlider sliderV = new JSlider(JSlider.VERTICAL, minSlider, maxSlider, maxDiff);
+	JSlider slider = new JSlider(JSlider.VERTICAL, minSlider, maxSlider, maxSlider/2);
+	JSlider sliderV = new JSlider(JSlider.VERTICAL, 0, maxVirus, maxVirus);
 
 	//correlacao cruzada
 	private Icon cc  = new  ImageIcon(getClass().getResource("correlacao_cruzada.png"));
@@ -122,7 +123,7 @@ public class FrameR  extends JFrame implements ActionListener, ChangeListener{
 		//Inicializando Ambiente
 		setTitle("Corona Results");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setBounds(500,0,1000,600);
+		setBounds(350,0,950,600);
 		contentPane = new JPanel();
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
@@ -156,7 +157,7 @@ public class FrameR  extends JFrame implements ActionListener, ChangeListener{
 		buttonLBPH.setHorizontalTextPosition(SwingConstants.CENTER); 
 		
 		virus = new JLabel();
-		virus.setText("VÃ­rus: "+numVirus);
+		virus.setText("Vírus: "+numVirus);
 		
 		GroupLayout g1_panelMenu = new GroupLayout(panelMenu);
 		g1_panelMenu.setHorizontalGroup(
@@ -199,32 +200,51 @@ public class FrameR  extends JFrame implements ActionListener, ChangeListener{
 		
 		//Painel do slider
 		panelS = new JPanel();
-		panelS.setBounds(800,0,90,600);
+		panelS.setBounds(800,0,140,600);
 		panelS.setBackground(Color.WHITE);
 		contentPane.add(panelS);
 		
-
-		
+		//label Maxima diferenca
+		labelMaxDiff = new JLabel();
+		labelMaxDiff.setText("Maxima Diferença");
+		panelS.add(labelMaxDiff);
 		slider.setPaintTicks(true);
 		slider.setPaintLabels(true);
 		// Set the spacing for the minor tick mark
-		slider.setMinorTickSpacing(10);
+		slider.setMinorTickSpacing(5);
 		slider.setName("Max Dif");
-
+		Hashtable<Integer, JLabel> labelTable = new Hashtable<>();
+        labelTable.put(minSlider, new JLabel(""+minSlider));
+        labelTable.put(maxSlider/2, new JLabel(""+maxSlider/2));       
+        labelTable.put(maxSlider, new JLabel(""+maxSlider));
+        slider.setLabelTable(labelTable);
+        slider.setBackground(new Color(95,168,160));
+		
 		slider.addChangeListener(this);
-
 		panelS.add(slider);
 		
 		
+		//label Maximo virus
+		labelMaxVirus = new JLabel();
+		labelMaxVirus.setText("N° Maximo de Virus");
+		panelS.add(labelMaxVirus);
 		sliderV.setPaintTicks(true);
 		sliderV.setPaintLabels(true);
 		// Set the spacing for the minor tick mark
-		sliderV.setMinorTickSpacing(10);
-		sliderV.setName("Max VÃ­rus");
-
+		sliderV.setMinorTickSpacing(2);
+		sliderV.setName("Max Vírus");
+		Hashtable<Integer, JLabel> labelTable2 = new Hashtable<>();
+		labelTable2.put(0, new JLabel(""+0));
+		labelTable2.put((maxVirus)/2, new JLabel(""+(int)(maxVirus/2)));       
+		labelTable2.put(maxVirus, new JLabel(""+maxVirus));
+        sliderV.setLabelTable(labelTable2);
+        sliderV.setBackground(new Color(95,168,160));
 		sliderV.addChangeListener(this);
 
 		panelS.add(sliderV);
+		
+		
+		
 
 	}
 	

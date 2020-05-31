@@ -24,8 +24,8 @@ class HoughCirclesRun {
 	
 	private int contador = 0;
 
-	public boolean ehVirus(BufferedImage subimagem, double percentT) {
-		int[] histograma = Utils.calculaHistograma2(Utils.limiarizacao(subimagem));
+	public boolean ehVirus(Mat subimagem, double percentT) {
+		int[] histograma = Utils.calculaHistograma2(Utils.limiarizacao(Utils.Mat2BufferedImage(subimagem)));
 
 		int s = histograma[0]+histograma[255];
 
@@ -61,9 +61,9 @@ class HoughCirclesRun {
 			    lado   = (int)Math.round(2*c[2]);
 			x_canto = x_canto < 0 ? 0 : x_canto;
 			y_canto = y_canto < 0 ? 0 : y_canto;
-			BufferedImage subimagem = null;
+			Mat subimagem = null;
 			if (x_canto+lado <= imagem.rows() && y_canto+lado <= imagem.cols()) {
-				subimagem = Utils.Mat2BufferedImage(imagem).getSubimage(x_canto,y_canto, lado, lado);
+				subimagem = imagem.submat(y_canto,y_canto+lado,x_canto,x_canto+lado);
 			}
 
 			if (subimagem != null && ehVirus(subimagem,percentT)) {

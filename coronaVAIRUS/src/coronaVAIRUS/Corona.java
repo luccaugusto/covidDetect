@@ -20,6 +20,7 @@ package coronaVAIRUS;
 // circularidade
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Graphics;
 import java.awt.Point;
@@ -30,6 +31,8 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
@@ -117,7 +120,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 	private static BufferedImage imagemL = null;
 	private static BufferedImage template = null;
 	private static BufferedImage templateL = null;
-
+	private static BufferedImage newImage = null;
 	private static Mat imagemM = null;
 	private static Mat templateM = null;
 
@@ -273,11 +276,11 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 
 		int min = 0, max = 255;
 		JSlider slider = new JSlider(JSlider.HORIZONTAL, min, max, threshold);
+		slider.setPreferredSize(new Dimension(500,50));
 		slider.setPaintTicks(true);
 		slider.setPaintLabels(true);
 		// Set the spacing for the minor tick mark
 		slider.setMinorTickSpacing(50);
-
 		slider.addChangeListener(this);
 
 		panelSlider.add(slider);
@@ -468,38 +471,51 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 				else                  imagemL.setRGB(i, j, Color.BLACK.getRGB());
 			}   
 		} 
-		//		rotulacao();
+		
 		g = panel.getGraphics();
 		g.drawImage(imagemL,0,0,null);
+		//rotulacao();
 	}
 
 	void rotulacao() {
+
 		int w = imagemL.getWidth();
 		int h = imagemL.getHeight();
-		int ultimo_rot = 0;
+		int ultimoRot = 0;
+		int totalRotulos = 0;
 		Color color;
 		ArrayList<int[]> equivalentes = new ArrayList<int[]>();
 		//matriz de rotulos
 		int[][] rotulos = new int[w][h];
 		//anula os rotulos
-		for (int i=0; i< w; i++)
-			for (int j=0; j<h; j++)
+		for (int i=0; i< w; i++) {
+			for (int j=0; j<h; j++) {
 				rotulos[i][j] = -1;
+			}
+		}
 
+		int A = -1; // esquerda
+		int B = -1; // diagonal esquerda para cima
+		int C = -1; // cima
+		int D = -1; // diagonal direita para cima
+		boolean cima=true;
+		boolean esquerda=true;
+		boolean direita=true;
+		
 		for (int i=0; i< w; i++) {
 			for (int j=0; j<h; j++) {
 				color = new Color(imagemL.getRGB(i,j));
 				//ponto de objeto, calcula os vizinhos
 				if (color.getRGB() == Color.BLACK.getRGB()) {
 					//vizinhaca
-					int A = -1;
-					int B = -1;
-					int C = -1;
-					int D = -1;
-
-					boolean cima=true;
-					boolean esquerda=true;
-					boolean direita=true;
+					A = -1;
+					B = -1;
+					C = -1;
+					D = -1;
+					
+					cima=true;
+					esquerda=true;
+					direita=true;
 					//olha tudo se nao for o primeiro ponto
 					//olha em cima se nao for a primeira linha
 					//olha a esquerda se nao for a primeira coluna
@@ -515,11 +531,37 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 					}
 
 					if (esquerda) A = rotulos[i-1][j];
-
+					
+					int P=0;
+					
+					if(C == -1 && A ==-1) {
+						P = ultimoRot++;
+						totalRotulos++;
+					}else if(C == A) {
+						P = C;
+					}else if(C == 0 || A == 0) {
+						P = (C != 0) ? C : A;
+					}else if(C != A){
+						P = C;
+						
+						for(int yTmp = 0; yTmp < w; yTmp++) {
+							for(int xTmp = 0; xTmp < h; xTmp++) {
+								if(rotulos[yTmp][xTmp] == A)
+									rotulos[yTmp][xTmp] = C;
+							}
+						}
+						
+						totalRotulos++;
+						
+					}
+					
+					rotulos[i][j] = P;
+					
+					 /*
 					//se os vizinhos nao foram rotulados marca o ponto atual com um novo rotulo
 					if (A+B+C+D == -4) {
-						rotulos[i][j] = ultimo_rot;
-						ultimo_rot++;
+						rotulos[i][j] = ultimoRot;
+						ultimoRot++;
 						//senao se forem iguais atribui o mesmo rotulo
 					} else if(A == B && B == C && C == D){
 						rotulos[i][j] = A;
@@ -532,12 +574,17 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 						equivalentes.add(aux1);
 						equivalentes.add(aux2);
 					}
+					
+					*/
+					
 				}
 			}
 		}
+
 		//Unifica rotulos equivalentes
 		//para cada entrada na tabela de equivalencias
 		//varre a matriz de rotulos toda e unifica 
+/*
 		for (int[] i: equivalentes) {
 			for (int j=0; j< w; j++) {
 				for (int k=0; k<h; k++) {
@@ -546,9 +593,30 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 				}
 			}
 		}
+*/
+		
+		newImage = Utils.deepCopy(imagemL);
+		ArrayList<Color> cores = new ArrayList<Color>();
+		color = Utils.corAleatoria();
+		System.out.println(totalRotulos);
+		for(int x = 0; x < w; x++) {
+			for(int y = 0; y < h; y++) {	
+				if(rotulos[x][y] != 0) {
+				newImage.setRGB(x, y, new Color((color.getRed()*rotulos[x][y])%255,
+												(color.getGreen()*rotulos[x][y])%255,
+												(color.getBlue()*rotulos[x][y]%255)).getRGB());
+				}
+				else {
+					System.out.println(totalRotulos);
+					newImage.setRGB(x, y, Color.WHITE.getRGB());
+				
+				}
+			}
+		
+		}
+		g = panel.getGraphics();
+		g.drawImage(newImage,0,0,null);
 	}
-
-
 	//Zoom
 	void redimensionarImagem() { 
 		newImageWidth =  (int)(newImageWidth * Zoom);
@@ -645,7 +713,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 		public void mousePressed( MouseEvent e ){
 			x1 = e.getX();
 			y1 = e.getY();
-			if (y1 > offset && y1 < offset+Altura && ferramentaAtual == Ferramentas.SELECAO) {
+			if (y1 > offset && y1 < offset+Altura && x1 < Largura && x1 > offsetx  &&ferramentaAtual == Ferramentas.SELECAO) {
 				if (ReMin.x == -1) {
 					ReMin.x = x1;
 					ReMin.y = y1;
