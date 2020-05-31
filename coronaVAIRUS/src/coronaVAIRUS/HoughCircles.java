@@ -19,14 +19,9 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import java.util.Random;
 
-
-//TODO
-//Printar numero de virus
-
-
 class HoughCirclesRun {
 
-	private int max_diff = 30;
+	
 	private int contador = 0;
 
 	public boolean ehVirus(BufferedImage subimagem, double percentT) {
@@ -37,12 +32,13 @@ class HoughCirclesRun {
 		double percent = histograma[255]/(double)s * 100;
 
 		double d = Math.abs(percent - percentT);
-		return d > max_diff;
+		return d > (FrameR.getMaxSlider()-FrameR.getMaxDiff());
 	}
 
 	public Mat run(Mat imagem,Mat template) {
 		// Load an image
-		Mat src = imagem;
+		Mat src = new Mat();
+		imagem.copyTo(src);
 
 		//calcula histograma e porcentagem de pretos no template
 		int[] histogramaT = Utils.calculaHistograma2(Utils.limiarizacao(Utils.Mat2BufferedImage(template)));
@@ -70,9 +66,6 @@ class HoughCirclesRun {
 				subimagem = Utils.Mat2BufferedImage(imagem).getSubimage(x_canto,y_canto, lado, lado);
 			}
 
-			//            Graphics g = FrameR.getPanel().getGraphics();
-			//           g.drawImage(subimagem,w,h,null);
-			//            w+= (int)Math.round(2*c[2]);
 			if (subimagem != null && ehVirus(subimagem,percentT)) {
 				contador++;
 				Point center = new Point(Math.round(c[0]), Math.round(c[1]));
@@ -87,9 +80,7 @@ class HoughCirclesRun {
 			}
 		}
 
-		//HighGui.imshow("detected circles", src);
-		//HighGui.waitKey();
-		//System.exit(0);
+		FrameR.setNumVirus(contador);
 		return src;
 	}
 }
@@ -99,8 +90,6 @@ public class HoughCircles {
 	private Mat template;
 
 	public HoughCircles (Mat imagem, Mat template) {
-		// Load the native library.
-		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 		this.imagem = imagem;
 		this.template = template;
 	}

@@ -14,17 +14,13 @@ import org.opencv.core.Scalar;
 import org.opencv.highgui.HighGui;
 import org.opencv.imgproc.Imgproc;
 
-//TODO
-// OK adaptar para encontrar multiplos virus
-// Slider max_diff
-// Slider max_virus
+
 class CorrelacaoCruzadaRun{
 	Boolean use_mask = false;
 	Mat img = new Mat(), templ = new Mat();
 	int match_method = Imgproc.TM_SQDIFF_NORMED;
 	JLabel imgDisplay = new JLabel(), resultDisplay = new JLabel();
-	private int max_diff = 10;
-	private int max_virus = 10;
+	
 
 	public boolean ehVirus(Mat subimagem, double percentT) {
 		int[] histograma = Utils.calculaHistograma2(Utils.limiarizacao(Utils.Mat2BufferedImage(subimagem)));
@@ -32,7 +28,7 @@ class CorrelacaoCruzadaRun{
 		double percent = histograma[255]/(double)s * 100;
 
 		double d = Math.abs(percent - percentT);
-		return d < max_diff;
+		return d < FrameR.getMaxDiff()/5;
 	}
 
 	// Só pega virús do mesmo tamanho da imagem selecionada
@@ -56,11 +52,11 @@ class CorrelacaoCruzadaRun{
 		img.copyTo(aux);
 		Core.MinMaxLocResult mmr = null;
 		Point min_loc = null;
-		//int max_num = (img.cols() * img.rows()) / ( templ.cols() * templ.rows());
+		
 
 		//matchtemplate na aux e botar max_loc na lista de encontrados
 		//desenha retangulos e retorna a img
-		for(int i=0; i<max_virus; i++) {
+		for(int i=0; i<FrameR.getMaxVirus(); i++) {
 			//pega o valor minimo do template matching
 			Imgproc.matchTemplate(aux, templ, result, match_method); 
 			Core.normalize(result, result, 0, 1, Core.NORM_MINMAX, -1, new Mat());
@@ -81,7 +77,8 @@ class CorrelacaoCruzadaRun{
 			Imgproc.rectangle(img, p, new Point(p.x + templ.cols(), p.y + templ.rows()),
 					new Scalar(color.getRed(),color.getGreen(),color.getBlue()), 2, 8, 0);
 		}
-
+		
+		FrameR.setNumVirus(virus.size());
 		return (BufferedImage) HighGui.toBufferedImage(img);
 	}
 

@@ -1,28 +1,25 @@
 package coronaVAIRUS;
 
+
 //TODO
 // OK Ler imagem png, tiff jpg 
 // OK Exibir imagem com opcao de zoom e histograma
 // OK extrair amostra da imagem atravez de um retangulo vermelho
 // OK Mudar o nome do evento no frameR
 // OK Criar icones Botoes
-// Detectar e contar quantos virus existem na imagem
-// Mostrar numero de virus
-// colorir virus com cores diferentes
-// Mover funcao de colorir para o utils
-// indicar o total de virus
-// Slider max_diff
-//		OK Limiarizacao
-//		OK Eliptica de Hough
-//		Corrigir erro de Mat channels pra imagem 2 no hough channels
-//		LBPH
-// 		Correlacao Cruzada
-//		Descritor de haralick
-//		descritores de forma
-//			circularidade
+// OK colorir virus com cores diferentes
+// OK Mover funcao de colorir para o utils
+// OK Limiarizacao
+// OK Eliptica de Hough
+// OK Detectar e contar quantos virus existem na imagem
+// Corrigir erro de Mat channels pra imagem 2 no hough channels
+// LBPH
+// OK Correlacao Cruzada
+// Descritor de haralick
+// descritores de forma
+// circularidade
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Graphics;
 import java.awt.Point;
@@ -31,18 +28,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
-import java.awt.image.DataBuffer;
-import java.awt.image.DataBufferByte;
-import java.awt.image.DataBufferInt;
-import java.awt.image.WritableRaster;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.Random;
 
 import javax.imageio.ImageIO;
 import javax.swing.GroupLayout;
@@ -53,7 +41,6 @@ import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
@@ -63,9 +50,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileSystemView;
 
 import org.opencv.core.Core;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfByte;
 import org.opencv.imgcodecs.Imgcodecs;
 
 public class Corona extends JFrame implements ActionListener ,ChangeListener{
@@ -83,6 +68,8 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 	private int offset = 110; // espaco ocupado pelos botoes
 	private int offsetx = 5; // espaco ocupado pelos botoes
 	private static int threshold = 190; //limite limiarizacao
+	private static boolean limiarizado = false;
+	
 
 
 	//variavel do retangulo atual
@@ -150,6 +137,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 		if (!source.getValueIsAdjusting()) {
 			threshold = source.getValue();
 			limiarizacao();
+			limiarizado = true;
 		}
 
 	}
@@ -408,6 +396,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 
 	protected void do_buttonDetectar_actionPerfomed(ActionEvent arg0){
 		limiarizacao();
+		limiarizado = true;
 	} 
 
 	protected void do_buttonCalc_actionPerfomed(ActionEvent arg0){
@@ -593,18 +582,25 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 
 		public void retangulo() {
 			g = panel.getGraphics();
-			g.drawImage(imagem,0,0,newImageWidth,newImageHeight,null);
+			if (limiarizado)
+				g.drawImage(imagemL,0,0,newImageWidth,newImageHeight,null);
+			else
+				g.drawImage(imagem,0,0,newImageWidth,newImageHeight,null);
 			//selecionar(ReMin,ReMax);
-			g.setColor(Color.RED);
+			g.setColor(new Color(255,0,0));
 
 			//reta superior
 			g.drawLine(ReMin.x-offsetx,ReMax.y-offset,ReMax.x-offsetx,ReMax.y-offset);
+			g.drawLine(ReMin.x-offsetx-1,ReMax.y-offset-1,ReMax.x-offsetx-1,ReMax.y-offset-1);
 			//reta esquerda
 			g.drawLine(ReMin.x-offsetx,ReMin.y-offset,ReMin.x-offsetx,ReMax.y-offset);
+			g.drawLine(ReMin.x-offsetx-1,ReMin.y-offset-1,ReMin.x-offsetx-1,ReMax.y-offset-1);
 			//reta inferior
 			g.drawLine(ReMin.x-offsetx,ReMin.y-offset,ReMax.x-offsetx,ReMin.y-offset);
+			g.drawLine(ReMin.x-offsetx-1,ReMin.y-offset-1,ReMax.x-offsetx-1,ReMin.y-offset-1);
 			//reta direita
 			g.drawLine(ReMax.x-offsetx,ReMin.y-offset,ReMax.x-offsetx,ReMax.y-offset);
+			g.drawLine(ReMax.x-offsetx-1,ReMin.y-offset-1,ReMax.x-offsetx-1,ReMax.y-offset-1);
 
 			ret1.x = ReMin.x;
 			ret1.y = ReMin.y;
@@ -617,15 +613,10 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 			template = imagem.getSubimage(ReMin.x-offsetx, ReMin.y-offset, largura, altura);
 			templateM = imagemM.submat(ReMin.y-offset,ReMax.y-offset,ReMin.x-offsetx,ReMax.x-offsetx);
 			if(imagemL != null) templateL = imagemL.getSubimage(ReMin.x-offsetx, ReMin.y-offset, largura, altura);
+			
+			FrameR.setMaxSliderCC((imagemM.cols() * imagemM.rows()) / ( templateM.cols() * templateM.rows()));
 
 			ReMin.x = ReMin.y = ReMax.x = ReMax.y = -1;
-		}
-
-		//calcula o tamanho da reta fg
-		//Tamanho da reta = sqrt(dx^2 + dy^2)
-		public int tamanho_reta(Ponto f, Ponto g /*hihihi*/) {
-			double tam = Math.sqrt( ( (g.x-f.x)*(g.x-f.x) + (g.y-f.y)*(g.y-f.y) ) );
-			return (int) Math.round(tam);
 		}
 
 		//selecionar
@@ -654,7 +645,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 		public void mousePressed( MouseEvent e ){
 			x1 = e.getX();
 			y1 = e.getY();
-			if (y1 > offset && ferramentaAtual == Ferramentas.SELECAO) {
+			if (y1 > offset && y1 < offset+Altura && ferramentaAtual == Ferramentas.SELECAO) {
 				if (ReMin.x == -1) {
 					ReMin.x = x1;
 					ReMin.y = y1;

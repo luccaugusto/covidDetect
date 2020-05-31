@@ -1,6 +1,7 @@
 package coronaVAIRUS;
 
 import java.awt.Color;
+
 import java.awt.EventQueue;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
@@ -9,18 +10,39 @@ import java.awt.image.BufferedImage;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
 import javax.swing.SwingConstants;
 
-public class FrameR  extends JFrame implements ActionListener{
+//TODO
+//Slider max_diff
+//Slider max_virus
+//OK Printar numero de virus
+//OK adaptar para encontrar multiplos virus
 
-	private static JPanel contentPane,panelMenu, panel;
+
+public class FrameR  extends JFrame implements ActionListener, ChangeListener{
+
+	private static JPanel contentPane,panelMenu, panel, panelS;
 	private JButton buttonLBPH, buttonCC, buttonHough;
+	private JLabel virus;
 	private static Graphics g;
+	private static int numVirus = 0;
+	private static int maxDiff = 0;
+	private static int maxVirus = 10;
+	private static int ultimo = 0; // 0- HC 1-CC 2-LPBH
+	static int minSlider = 0;
+	static int maxSlider = 50;
+	static int maxSliderCC = 0;
+	JSlider slider = new JSlider(JSlider.VERTICAL, minSlider, maxSlider, maxDiff);
+	JSlider sliderV = new JSlider(JSlider.VERTICAL, minSlider, maxSlider, maxDiff);
 
 	//correlacao cruzada
 	private Icon cc  = new  ImageIcon(getClass().getResource("correlacao_cruzada.png"));
@@ -30,7 +52,51 @@ public class FrameR  extends JFrame implements ActionListener{
 	private Icon ihc  = new  ImageIcon(getClass().getResource("hc.png"));
 
 	private String corFundo = "#00a388";
+	
+	public static int getNumVirus() {
+		return numVirus;
+	}
+	
+	public static void setNumVirus(int num) {
+		numVirus = num;
+	}
 
+	public static int getMaxDiff() {
+		return maxDiff;
+	}
+	
+	public static void setMaxDiff(int num) {
+		maxDiff = num;
+	}
+
+	public static int getMaxVirus() {
+		return maxVirus;
+	}
+	
+	public static void setMaxVirus(int num) {
+		maxVirus = num;
+	}
+	
+	public static int getMinSlider() {
+		return minSlider;
+	}
+	
+	public static void setMinSlider(int num) {
+		minSlider = num;
+	}
+	
+	public static int getMaxSlider() {
+		return maxSlider;
+	}
+	
+	public static void setMaxSlider(int num) {
+		maxSlider = num;
+	}
+	
+	public static void setMaxSliderCC(int num) {
+		maxSliderCC = num;
+	}
+	
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable(){
 			public void run(){
@@ -56,7 +122,7 @@ public class FrameR  extends JFrame implements ActionListener{
 		//Inicializando Ambiente
 		setTitle("Corona Results");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setBounds(560,0,800,600);
+		setBounds(500,0,1000,600);
 		contentPane = new JPanel();
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
@@ -88,7 +154,10 @@ public class FrameR  extends JFrame implements ActionListener{
 		buttonLBPH.setIcon(lb);
 		buttonLBPH.setBackground(Color.decode(corFundo));
 		buttonLBPH.setHorizontalTextPosition(SwingConstants.CENTER); 
-
+		
+		virus = new JLabel();
+		virus.setText("Vírus: "+numVirus);
+		
 		GroupLayout g1_panelMenu = new GroupLayout(panelMenu);
 		g1_panelMenu.setHorizontalGroup(
 				g1_panelMenu.createParallelGroup(Alignment.CENTER)
@@ -97,6 +166,7 @@ public class FrameR  extends JFrame implements ActionListener{
 				.addComponent(buttonHough)
 				.addComponent(buttonCC)
 				.addComponent(buttonLBPH)
+				.addComponent(virus)
 				//)
 
 				);
@@ -112,6 +182,8 @@ public class FrameR  extends JFrame implements ActionListener{
 					.addComponent(buttonCC)
 					.addGap(30)
 					.addComponent(buttonLBPH)
+					.addGap(30)
+					.addComponent(virus)
 					//	)
 					)
 				);
@@ -124,7 +196,58 @@ public class FrameR  extends JFrame implements ActionListener{
 		panel.setBounds(90,0,710,600);
 		contentPane.add(panel);
 		panel.setLayout(null);
+		
+		//Painel do slider
+		panelS = new JPanel();
+		panelS.setBounds(800,0,90,600);
+		panelS.setBackground(Color.WHITE);
+		contentPane.add(panelS);
+		
 
+		
+		slider.setPaintTicks(true);
+		slider.setPaintLabels(true);
+		// Set the spacing for the minor tick mark
+		slider.setMinorTickSpacing(10);
+		slider.setName("Max Dif");
+
+		slider.addChangeListener(this);
+
+		panelS.add(slider);
+		
+		
+		sliderV.setPaintTicks(true);
+		sliderV.setPaintLabels(true);
+		// Set the spacing for the minor tick mark
+		sliderV.setMinorTickSpacing(10);
+		sliderV.setName("Max Vírus");
+
+		sliderV.addChangeListener(this);
+
+		panelS.add(sliderV);
+
+	}
+	
+	@Override
+	public void stateChanged(ChangeEvent e) {
+		JSlider source = (JSlider) e.getSource();
+		if (!source.getValueIsAdjusting()) {
+			if (source == slider) {
+				maxDiff = source.getValue();
+				ActionEvent a = null;
+				if (ultimo == 0) {
+					do_buttonHough_actionPerfomed(a);
+				}else if (ultimo == 1) {
+					do_buttonCC_actionPerfomed(a);
+				}
+			}else {
+				maxVirus = source.getValue();
+				ActionEvent a = null;
+				if (ultimo == 1) {
+					do_buttonCC_actionPerfomed(a);
+				}
+			}
+		}
 	}
 
 	public void actionPerformed(ActionEvent arg0){
@@ -140,21 +263,26 @@ public class FrameR  extends JFrame implements ActionListener{
 	}
 
 	protected void do_buttonHough_actionPerfomed(ActionEvent arg0){
-		HoughCircles hc = new HoughCircles(Corona.getMatImg(),Corona.getMatTemplate());
+		ultimo=0;
+		HoughCircles hc = new HoughCircles(Corona.getImagemM(),Corona.getTemplateM());
 		BufferedImage detectados = hc.detectar();
 		g = panel.getGraphics();
 		g.drawImage(detectados, 0, 0, null);
+		virus.setText("Vírus: "+numVirus);
 	}
 
 	protected void do_buttonCC_actionPerfomed(ActionEvent arg0){
+		ultimo=1;
 		CorrelacaoCruzada cc = new CorrelacaoCruzada(Corona.getImagemM(), Corona.getTemplateM());
 		//cc.detectar();
 		BufferedImage detectados = cc.detectar();
 		g = panel.getGraphics();
 		g.drawImage(detectados, 0, 0, null);
+		virus.setText("Vírus: "+numVirus);
 	}
 
 	protected void do_buttonLBPH_actionPerfomed(ActionEvent arg0){
-
+		ultimo=2;
+		virus.setText("Vírus: "+numVirus);
 	}
 }
