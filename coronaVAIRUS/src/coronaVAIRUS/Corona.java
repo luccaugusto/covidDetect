@@ -36,6 +36,8 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.swing.GroupLayout;
@@ -477,7 +479,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 	        data[i] = weight;
 	    }
 	    Kernel kernel = new Kernel(size,size,data);
-	    ConvolveOp op = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
+	    ConvolveOp op = new ConvolveOp(kernel, ConvolveOp.EDGE_ZERO_FILL, null);
 	    //tbi is BufferedImage
 	    borrada = op.filter(imagemL, null);
 		
@@ -500,6 +502,9 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 
 		int w = imagemL.getWidth();
 		int h = imagemL.getHeight();
+		
+		//lista de rotulos e cores
+		Map<Integer, Color> dic = new HashMap<Integer, Color>();
 
 		int ultimoRot = 0;
 		int totalRotulos = 0;
@@ -550,32 +555,38 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 						if (esquerda) B = rotulos[i-1][j-1];
 					}
 
-					if (esquerda) A = rotulos[i-1][j];
+					if (esquerda) {
+						A = rotulos[i-1][j];
+						if (cima) B = rotulos[i-1][j-1];
+					}
 					
-					int P=0;
+					int P=-1;
 					
-					if(C == -1 && A ==-1) {
+					if(C == -1 && A == -1) {
 						P = ultimoRot++;
 						totalRotulos++;
 					}else if(C == A) {
-						P = C;
-					}else if(C != 0 || A != 0) {
-						P = (C != 0) ? C : A;
+						P = A;
+					}else if(C != -1 || A != -1) {
+						P = (C != -1) ? C : A;
 					}else if(C != A){
-						P = C;
+						P = A;
 						//Unifica os rotulos
 						for(int yTmp = 0; yTmp < w; yTmp++) {
 							for(int xTmp = 0; xTmp < h; xTmp++) {
-								if(rotulos[yTmp][xTmp] == A)
-									rotulos[yTmp][xTmp] = C;
+								if(rotulos[yTmp][xTmp] == C) {
+									rotulos[yTmp][xTmp] = A;
+									dic.put(A,Utils.corAleatoria());
+								}
 							}
 						}
 						
-						totalRotulos++;
+						totalRotulos--;
 						
 					}
 					
 					rotulos[i][j] = P;
+					dic.put(P,Utils.corAleatoria());
 					
 					 /*
 					//se os vizinhos nao foram rotulados marca o ponto atual com um novo rotulo
@@ -603,15 +614,10 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 		
 		System.out.println(totalRotulos);
 		newImage = Utils.deepCopy(imagemL);
-		ArrayList<Color> cores = new ArrayList<Color>();
-		color = Utils.corAleatoria();
 		for(int x = 0; x < w; x++) {
 			for(int y = 0; y < h; y++) {	
 				if(rotulos[x][y] != -1) {
-				int red = (color.getRed()*rotulos[x][y])%255;
-				int green=(color.getGreen()*rotulos[x][y])%255;
-				int blue =(color.getBlue()*rotulos[x][y])%255;
-				newImage.setRGB(x, y, new Color(red,green,blue).getRGB());
+					newImage.setRGB(x, y, dic.get(rotulos[x][y]).getRGB());
 				}
 				else {
 					newImage.setRGB(x, y, Color.WHITE.getRGB());
