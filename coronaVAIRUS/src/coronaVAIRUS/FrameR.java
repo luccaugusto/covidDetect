@@ -28,7 +28,6 @@ import javax.swing.SwingConstants;
 //OK Printar numero de virus
 //OK adaptar para encontrar multiplos virus
 
-
 public class FrameR  extends JFrame implements ActionListener, ChangeListener{
 
 	private static JPanel contentPane,panelMenu, panel, panelS;
@@ -45,11 +44,11 @@ public class FrameR  extends JFrame implements ActionListener, ChangeListener{
 	JSlider slider = new JSlider(JSlider.VERTICAL, minSlider, maxSlider, maxSlider/2);
 	JSlider sliderV = new JSlider(JSlider.VERTICAL, 0, maxVirus, maxVirus);
 
-	//correlacao cruzada
+	//Correlação cruzada
 	private Icon cc  = new  ImageIcon(getClass().getResource("correlacao_cruzada.png"));
-	//hough circles
+	//LBPH
 	private Icon lb  = new  ImageIcon(getClass().getResource("lbph.png"));
-	//hough circles
+	//Hough circles
 	private Icon ihc  = new  ImageIcon(getClass().getResource("hc.png"));
 
 	private String corFundo = "#00a388";
@@ -128,28 +127,27 @@ public class FrameR  extends JFrame implements ActionListener, ChangeListener{
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 
-
 		//Painel com botoes
 		panelMenu = new JPanel();
 		panelMenu.setBounds(0,0,90,600);
 		panelMenu.setBackground(Color.WHITE);
 		contentPane.add(panelMenu);
 
-		//botao Hough 
+		//Botão Hough 
 		buttonHough = new JButton();
 		buttonHough.addActionListener(this);
 		buttonHough .setIcon(ihc);
 		buttonHough .setBackground(Color.decode(corFundo));
 		buttonHough .setHorizontalTextPosition(SwingConstants.CENTER); 
 
-		//botao CC
+		//Botão CC
 		buttonCC = new JButton();
 		buttonCC.addActionListener(this);
 		buttonCC.setIcon(cc);
 		buttonCC.setBackground(Color.decode(corFundo));
 		buttonCC.setHorizontalTextPosition(SwingConstants.CENTER); 
 
-		//botao LBPH
+		//Botão LBPH
 		buttonLBPH = new JButton();
 		buttonLBPH.addActionListener(this);
 		buttonLBPH.setIcon(lb);
@@ -157,19 +155,16 @@ public class FrameR  extends JFrame implements ActionListener, ChangeListener{
 		buttonLBPH.setHorizontalTextPosition(SwingConstants.CENTER); 
 		
 		virus = new JLabel();
-		virus.setText("V�rus: "+numVirus);
+		virus.setText("Vírus: "+numVirus);
 		
 		GroupLayout g1_panelMenu = new GroupLayout(panelMenu);
 		g1_panelMenu.setHorizontalGroup(
 				g1_panelMenu.createParallelGroup(Alignment.CENTER)
-				//.addGroup( g1_panelMenu.createSequentialGroup()
 				.addGap(10)
 				.addComponent(buttonHough)
 				.addComponent(buttonCC)
 				.addComponent(buttonLBPH)
 				.addComponent(virus)
-				//)
-
 				);
 
 		g1_panelMenu.setVerticalGroup(
@@ -177,7 +172,6 @@ public class FrameR  extends JFrame implements ActionListener, ChangeListener{
 				.addGap(10)
 				.addGroup(g1_panelMenu.createSequentialGroup()
 					.addGap(30)
-					//.addGroup(g1_panelMenu.createParallelGroup(Alignment.BASELINE)
 					.addComponent(buttonHough)
 					.addGap(30)
 					.addComponent(buttonCC)
@@ -185,7 +179,6 @@ public class FrameR  extends JFrame implements ActionListener, ChangeListener{
 					.addComponent(buttonLBPH)
 					.addGap(30)
 					.addComponent(virus)
-					//	)
 					)
 				);
 
@@ -204,13 +197,13 @@ public class FrameR  extends JFrame implements ActionListener, ChangeListener{
 		panelS.setBackground(Color.WHITE);
 		contentPane.add(panelS);
 		
-		//label Maxima diferenca
+		//Label Máxima diferença
 		labelMaxDiff = new JLabel();
-		labelMaxDiff.setText("Maxima Diferen�a");
+		labelMaxDiff.setText("Máxima Diferença");
 		panelS.add(labelMaxDiff);
 		slider.setPaintTicks(true);
 		slider.setPaintLabels(true);
-		// Set the spacing for the minor tick mark
+		//Set the spacing for the minor tick mark
 		slider.setMinorTickSpacing(5);
 		slider.setName("Max Dif");
 		Hashtable<Integer, JLabel> labelTable = new Hashtable<>();
@@ -219,20 +212,18 @@ public class FrameR  extends JFrame implements ActionListener, ChangeListener{
         labelTable.put(maxSlider, new JLabel(""+maxSlider));
         slider.setLabelTable(labelTable);
         slider.setBackground(new Color(95,168,160));
-		
 		slider.addChangeListener(this);
 		panelS.add(slider);
 		
-		
-		//label Maximo virus
+		//Label Máximo vírus
 		labelMaxVirus = new JLabel();
-		labelMaxVirus.setText("N� Maximo de Virus");
+		labelMaxVirus.setText("N Máximo de Vírus");
 		panelS.add(labelMaxVirus);
 		sliderV.setPaintTicks(true);
 		sliderV.setPaintLabels(true);
-		// Set the spacing for the minor tick mark
+		//Set the spacing for the minor tick mark
 		sliderV.setMinorTickSpacing(2);
-		sliderV.setName("Max V�rus");
+		sliderV.setName("Max Vírus");
 		Hashtable<Integer, JLabel> labelTable2 = new Hashtable<>();
 		labelTable2.put(0, new JLabel(""+0));
 		labelTable2.put((maxVirus)/2, new JLabel(""+(int)(maxVirus/2)));       
@@ -240,12 +231,7 @@ public class FrameR  extends JFrame implements ActionListener, ChangeListener{
         sliderV.setLabelTable(labelTable2);
         sliderV.setBackground(new Color(95,168,160));
 		sliderV.addChangeListener(this);
-
 		panelS.add(sliderV);
-		
-		
-		
-
 	}
 	
 	@Override
@@ -294,7 +280,6 @@ public class FrameR  extends JFrame implements ActionListener, ChangeListener{
 	protected void do_buttonCC_actionPerfomed(ActionEvent arg0){
 		ultimo=1;
 		CorrelacaoCruzada cc = new CorrelacaoCruzada(Corona.getImagemM(), Corona.getTemplateM());
-		//cc.detectar();
 		BufferedImage detectados = cc.detectar();
 		g = panel.getGraphics();
 		g.drawImage(detectados, 0, 0, null);

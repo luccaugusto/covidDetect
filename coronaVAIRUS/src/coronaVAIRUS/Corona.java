@@ -1,6 +1,5 @@
 package coronaVAIRUS;
 
-
 //TODO
 // OK Ler imagem png, tiff jpg 
 // OK Exibir imagem com opcao de zoom e histograma
@@ -62,25 +61,23 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 public class Corona extends JFrame implements ActionListener ,ChangeListener{
-	// DefiniÃ§Ã£o de variÃ¡veis relacionadas Ã  tela
+	//Definição de variáveis relacionadas a tela
 	private FrameR frameR = new FrameR();
 	private JPanel contentPane, panelMenu, panelH, panel, panelSlider;
 	private JButton buttonUpload, buttonZoomP, buttonZoomM, buttonSelecionar, buttonDetectar, buttonCalc;
 	private int x1,y1,x2,y2;
 	private static MouseHandler mouse;
 	private Graphics g;
-	private Point mouseReleased, mousePressed,mousePos;
+	private Point mouseReleased, mousePressed, mousePos;
 	private JColorChooser Cores;
 	private int[] histograma = new int[256];
 	private int[] histogramaDiscreto = new int[128];
-	private int offset = 110; // espaco ocupado pelos botoes
-	private int offsetx = 5; // espaco ocupado pelos botoes
-	private static int threshold = 190; //limite limiarizacao
+	private int offset = 110; //Espaço ocupado pelos botões
+	private int offsetx = 5; //Espaço ocupado pelos botões
+	private static int threshold = 190; //Limite limiarização
 	private static boolean limiarizado = false;
 	
-
-
-	//variavel do retangulo atual
+	//Variável do retângulo atual
 	Ponto ret1 = new Ponto();
 	Ponto ret2 = new Ponto();
 
@@ -89,19 +86,18 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 
 	private String corFundo = "#00a388";
 
-	//upload
+	//Upload da imagem
 	private Icon up   = new  ImageIcon(getClass().getResource("upload.png"));
-	//zoom +
+	//Zoom +
 	private Icon zp   = new  ImageIcon(getClass().getResource("zoom_mais.png"));
-	//zoom -
+	//Zoom -
 	private Icon zm   = new  ImageIcon(getClass().getResource("zoom_menos.png"));
-	//selecionar
+	//Selecionar
 	private Icon se   = new  ImageIcon(getClass().getResource("selecionar.png"));
-	//detectar
+	//Detectar vírus
 	private Icon de   = new  ImageIcon(getClass().getResource("detectar.png"));
-	//limiarizar
+	//Limiarizar
 	private Icon li   = new  ImageIcon(getClass().getResource("limiarizar.png"));
-
 
 	//Tamanho do Canvas
 	private int inicioL = 0;
@@ -109,13 +105,13 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 	private int Largura = 800;
 	private int Altura  = 540;
 
-	//tamanho do canvas do histograma
+	//Tamanho do canvas do histograma
 	private int inicioLH = 810;
 	private int inicioAH = 80;
 	private int LarguraH = 400;
 	private int AlturaH  = 540;
 
-	//tamanho do slider
+	//Tamanho do slider
 	private int inicioS = inicioA+Altura+10;
 	private int LarguraS = Largura;
 	private int AlturaS = 60;
@@ -129,7 +125,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 	private static Mat imagemM = null;
 	private static Mat templateM = null;
 
-	//variÃ¡vel do zoom
+	//Variável do zoom
 	private double Zoom = 0;
 
 	private enum Ferramentas {
@@ -147,14 +143,13 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 			limiarizacao();
 			limiarizado = true;
 		}
-
 	}
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable(){
 			public void run(){
 				try{
-					// load the native OpenCV library
+					//Load the native OpenCV library
 					System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 					Corona frame = new Corona();
 					frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -167,7 +162,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 	}
 
 	public Corona() {
-		//Inicializando Ambiente
+		//Inicializando ambiente
 		setTitle("Corona Finder");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(0,0,1220,600);
@@ -175,54 +170,54 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 
-		//Painel com botoes
+		//Painel com botões
 		panelMenu = new JPanel();
 		panelMenu.setBounds(0,0,800,80);
 		contentPane.add(panelMenu);
 
-		//botao upload
+		//Botão upload
 		buttonUpload = new JButton();
 		buttonUpload.addActionListener((ActionListener) this);
 		buttonUpload.setIcon(up);
 		buttonUpload.setBackground(Color.decode(corFundo));
 		buttonUpload.setHorizontalTextPosition(SwingConstants.CENTER); 
 
-		//botao Selecionar
+		//Botão selecionar
 		buttonSelecionar = new JButton();
 		buttonSelecionar.addActionListener((ActionListener) this);
 		buttonSelecionar.setIcon(se);
 		buttonSelecionar.setBackground(Color.decode(corFundo));
 		buttonSelecionar.setHorizontalTextPosition(SwingConstants.CENTER); 
 
-		//botao Zoom +
+		//Botão Zoom +
 		buttonZoomP = new JButton();
 		buttonZoomP.addActionListener((ActionListener) this);
 		buttonZoomP.setIcon(zp);
 		buttonZoomP.setBackground(Color.decode(corFundo));
 		buttonZoomP.setHorizontalTextPosition(SwingConstants.CENTER); 
 
-		//botao Zoom -
+		//Botão Zoom -
 		buttonZoomM = new JButton();
 		buttonZoomM.addActionListener((ActionListener) this);
 		buttonZoomM.setIcon(zm);
 		buttonZoomM.setBackground(Color.decode(corFundo));
 		buttonZoomM.setHorizontalTextPosition(SwingConstants.CENTER); 
 
-		//botÃ£o limiarizar virus
+		//Botão limiarizar
 		buttonDetectar = new JButton();
 		buttonDetectar.addActionListener((ActionListener) this);
 		buttonDetectar.setIcon(li);
 		buttonDetectar.setBackground(Color.decode(corFundo));
 		buttonDetectar.setHorizontalTextPosition(SwingConstants.CENTER);
 
-		//botÃ£o para abrir tela de contagem
+		//Botão para abrir tela de contagem
 		buttonCalc = new JButton();
 		buttonCalc.addActionListener((ActionListener) this);
 		buttonCalc.setIcon(de);
 		buttonCalc.setBackground(Color.decode(corFundo));
 		buttonCalc.setHorizontalTextPosition(SwingConstants.CENTER);
 
-		//configurar grupo de botoes
+		//Configurar grupo de botões
 		GroupLayout g1_panelMenu = new GroupLayout(panelMenu);
 		g1_panelMenu.setHorizontalGroup(
 				g1_panelMenu.createParallelGroup(Alignment.CENTER)
@@ -272,19 +267,19 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 		contentPane.add(panelH);
 		panelH.setLayout(null);
 
-		//Painel com botoes
+		//Painel com botões
 		panelSlider = new JPanel();
 		panelSlider.setBackground(Color.WHITE);
 		panelSlider.setBounds(0,inicioS,LarguraS,AlturaS);
 		contentPane.add(panelSlider);
 
-
+		//Slider
 		int min = 0, max = 255;
 		JSlider slider = new JSlider(JSlider.HORIZONTAL, min, max, threshold);
 		slider.setPreferredSize(new Dimension(500,50));
 		slider.setPaintTicks(true);
 		slider.setPaintLabels(true);
-		// Set the spacing for the minor tick mark
+		//Set the spacing for the minor tick mark
 		slider.setMinorTickSpacing(50);
 		slider.addChangeListener(this);
 
@@ -315,6 +310,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 		return templateM;
 	}
 
+	//Ações que os botões irão executar
 	public void actionPerformed(ActionEvent arg0){
 		if(arg0.getSource() == buttonUpload){
 			do_buttonUpload_actionPerfomed(arg0);
@@ -331,10 +327,13 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 		}
 	}
 
+	//Botão de upload selecionado
 	protected void do_buttonUpload_actionPerfomed(ActionEvent arg0){
+		//Limpa o canvas
 		panel.repaint();
 		panelH.repaint();
 		zeraHistogramas();
+		//Escolher a imagem
 		JFileChooser jfc = new JFileChooser(FileSystemView.getFileSystemView());
 		File selectedFile= null;
 		int returnValue = jfc.showOpenDialog(null);
@@ -352,18 +351,15 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 			calculaHistograma(imagem);  
 
 		} catch (IOException e) {
-
 		}
 	} 
 
-	//init_offset = ((h * y0) + x) bytes
-	//offset = width - x1 + width - x0
-	//ateh height-y1
-
+	//Botão para seleção selecionado
 	protected void do_buttonSelecionar_actionPerfomed(ActionEvent arg0){
 		ferramentaAtual = Ferramentas.SELECAO;
 	}
 
+	//Botão para Zoom + selecionado
 	protected void do_buttonZoomP_actionPerfomed(ActionEvent arg0){
 		panel.repaint();
 		String zoomLevel;
@@ -373,16 +369,13 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 				zoomLevel.replaceAll( "," , "." );
 				Zoom = Double.parseDouble(zoomLevel);
 				Zoom = (Zoom/100)+1;
-				//ferramenta_atual = Ferramentas.ROTACAO;
-				//mouse.rotation();
 			}catch(Exception e){
-				//JOptionPane.showMessageDialog(null, "Digite apenas nÃºmeros inteiros");
 			}  
 		}
 		redimensionarImagem();
-
 	}
-
+	
+	//Botão para Zoom - selecionado
 	protected void do_buttonZoomM_actionPerfomed(ActionEvent arg0){
 		panel.repaint();
 		String zoomLevel;
@@ -392,25 +385,24 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 				zoomLevel.replaceAll( "," , "." );
 				Zoom = Double.parseDouble(zoomLevel);
 				Zoom = 1-(Zoom/100);
-				//ferramenta_atual = Ferramentas.ROTACAO;
-				//mouse.rotation();
-
 			}catch(Exception e){
-				//JOptionPane.showMessageDialog(null, "Digite apenas nÃºmeros inteiros");
 			}  
 		}
 		redimensionarImagem();
 	}
 
+	//Botão para limiarizar imagem selecionado
 	protected void do_buttonDetectar_actionPerfomed(ActionEvent arg0){
 		limiarizacao();
 		limiarizado = true;
 	} 
 
+	//Botão para abrir a janela para detectar os vírus
 	protected void do_buttonCalc_actionPerfomed(ActionEvent arg0){
 		frameR.setVisible(true);
 	}  
 
+	//Função para calcular a maior frequência de tom na imagem
 	int maior() {
 		int maior=histograma[0];
 		for (int i=1; i< histograma.length; ++i)
@@ -419,6 +411,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 		return maior;
 	}
 
+	//Zerar histograma
 	void zeraHistogramas() {
 		for(int i=0; i<histograma.length; i++) {
 			histograma[i] = 0;
@@ -426,6 +419,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 		}
 	}
 
+	//Permite um histograma mais compacto para uma melhor visualização
 	void discretizaHistograma() {
 		int j=0;
 		int soma=0;
@@ -439,6 +433,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 		}
 	}
 
+	//Calcula o histograma
 	void calculaHistograma(BufferedImage img){
 		for(int y = 0; y < img.getHeight();y++){
 			for(int x = 0; x < img.getWidth();x++){
@@ -451,8 +446,9 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 		exibeHistograma();
 	}
 
+	//Exibe o histograma
 	void exibeHistograma() {
-		//ponto inicial das linhas, move da esquerda para a direita no eixo x;
+		//Ponto inicial das linhas, move da esquerda para a direita no eixo x;
 		g = panelH.getGraphics();
 		int x=0;
 		int y;
@@ -460,17 +456,17 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 		int maior = maior();
 		for(int i=0; i < histogramaDiscreto.length; i++) {
 			y = histogramaDiscreto[i] * AlturaH / maior;
-			//printa para cada valor uma coluna de largura igual
+			//Printa para cada valor uma coluna de largura igual
 			for(int j=0; j< intervalo; ++j, ++x) 
 				g.drawLine(x,AlturaH,x,AlturaH-y);
 		}
 	}
 
+	//Limiarização da imagem
 	void limiarizacao() {
 		imagemL = Utils.deepCopy(imagem);
 		BufferedImage borrada = null;
-		
-		//borra um poucoa imagem para evitar buracos nos objetos
+		//Borra um poucoa imagem para evitar buracos nos objetos
 		int radius = 11;
 	    int size = radius * 2 + 1;
 	    float weight = 1.0f / (size * size);
@@ -480,9 +476,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 	    }
 	    Kernel kernel = new Kernel(size,size,data);
 	    ConvolveOp op = new ConvolveOp(kernel, ConvolveOp.EDGE_ZERO_FILL, null);
-	    //tbi is BufferedImage
 	    borrada = op.filter(imagemL, null);
-		
 		for (int i = 0; i < borrada.getWidth(); i++) {
 			for (int j = 0; j < borrada.getHeight(); j++) {
 				Color color = new Color(borrada.getRGB(i,j));
@@ -491,77 +485,66 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 				else                  imagemL.setRGB(i, j, Color.BLACK.getRGB());
 			}   
 		} 
-		
 		g = panel.getGraphics();
 		g.drawImage(imagemL,0,0,null);
 		rotulacao();
-
 	}
 
+	//Rotula a imagem
 	void rotulacao() {
-
 		int w = imagemL.getWidth();
 		int h = imagemL.getHeight();
-		
-		//lista de rotulos e cores
+		//Lista de rótulos e cores
 		Map<Integer, Color> dic = new HashMap<Integer, Color>();
-
 		int ultimoRot = 0;
 		int totalRotulos = 0;
 		Color color;
 		ArrayList<int[]> equivalentes = new ArrayList<int[]>();
-		//matriz de rotulos
+		//Matriz de rótulos
 		int[][] rotulos = new int[w][h];
-		//anula os rotulos
+		//Anula os rótulos
 		for (int i=0; i< w; i++) {
 			for (int j=0; j<h; j++) {
 				rotulos[i][j] = -1;
 			}
 		}
-
-		int A = -1; // esquerda
-		int B = -1; // diagonal esquerda para cima
-		int C = -1; // cima
-		int D = -1; // diagonal direita para cima
+		int A = -1; //Esquerda
+		int B = -1; //Diagonal esquerda para cima
+		int C = -1; //Cima
+		int D = -1; //Diagonal direita para cima
 		boolean cima=true;
 		boolean esquerda=true;
 		boolean direita=true;
-		
 		for (int i=0; i< w; i++) {
 			for (int j=0; j<h; j++) {
 				color = new Color(imagemL.getRGB(i,j));
-				//ponto de objeto, calcula os vizinhos
+				//Ponto de objeto, calcula os vizinhos
 				if (color.getRGB() == Color.BLACK.getRGB()) {
-					//vizinhaca
+					//Vizinhaça
 					A = -1;
 					B = -1;
 					C = -1;
 					D = -1;
-					
 					cima=true;
 					esquerda=true;
 					direita=true;
-					//olha tudo se nao for o primeiro ponto
-					//olha em cima se nao for a primeira linha
-					//olha a esquerda se nao for a primeira coluna
-					//olha a direita em cima se nao for a ultima coluna
+					//Olha tudo se não for o primeiro ponto
+					//Olha em cima se não for a primeira linha
+					//Olha a esquerda se não for a primeira coluna
+					//Olha a direita em cima se não for a ultima coluna
 					if (j==0) cima = false;
 					if (i==0) esquerda = false;
 					if (i==w-1) direita = false;
-
 					if (cima) {
 						C = rotulos[i][j-1];
 						if (direita) D = rotulos[i+1][j-1];
 						if (esquerda) B = rotulos[i-1][j-1];
 					}
-
 					if (esquerda) {
 						A = rotulos[i-1][j];
 						if (cima) B = rotulos[i-1][j-1];
 					}
-					
 					int P=-1;
-					
 					if(C == -1 && A == -1) {
 						P = ultimoRot++;
 						totalRotulos++;
@@ -571,7 +554,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 						P = (C != -1) ? C : A;
 					}else if(C != A){
 						P = A;
-						//Unifica os rotulos
+						//Unifica os rótulos
 						for(int yTmp = 0; yTmp < w; yTmp++) {
 							for(int xTmp = 0; xTmp < h; xTmp++) {
 								if(rotulos[yTmp][xTmp] == C) {
@@ -580,38 +563,13 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 								}
 							}
 						}
-						
 						totalRotulos--;
-						
 					}
-					
 					rotulos[i][j] = P;
-					dic.put(P,Utils.corAleatoria());
-					
-					 /*
-					//se os vizinhos nao foram rotulados marca o ponto atual com um novo rotulo
-					if (A+B+C+D == -4) {
-						rotulos[i][j] = ultimoRot;
-						ultimoRot++;
-						//senao se forem iguais atribui o mesmo rotulo
-					} else if(A == B && B == C && C == D){
-						rotulos[i][j] = A;
-						//se forem diferentes coloca os rotulos numa tabela de equivalencias
-					}else{
-						int[] aux = {A,B};
-						int[] aux1 = {A,C};
-						int[] aux2 = {A,D};
-						equivalentes.add(aux);
-						equivalentes.add(aux1);
-						equivalentes.add(aux2);
-					}
-					
-					*/
-					
+					dic.put(P,Utils.corAleatoria());					
 				}
 			}
 		}
-		
 		System.out.println(totalRotulos);
 		newImage = Utils.deepCopy(imagemL);
 		for(int x = 0; x < w; x++) {
@@ -621,64 +579,50 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 				}
 				else {
 					newImage.setRGB(x, y, Color.WHITE.getRGB());
-				
 				}
 			}
-		
 		}
 		g = panel.getGraphics();
 		g.drawImage(newImage,0,0,null);
 	}
-	//Zoom
+	
+	//Zoom positivo e negativo
 	void redimensionarImagem() { 
 		newImageWidth =  (int)(newImageWidth * Zoom);
 		newImageHeight = (int)(newImageHeight * Zoom);
 		g = panel.getGraphics();
 		g.drawImage(imagem, 0, 0, newImageWidth , newImageHeight , null);
-		/*
-		   int newImageWidth = (int)(imagem.getWidth() * Zoom);
-		   int newImageHeight = (int)(imagem.getHeight() * Zoom);
-		   BufferedImage resizedImage = new BufferedImage(newImageWidth , newImageHeight, BufferedImage.TYPE_INT_ARGB);
-		   Graphics2D g = resizedImage.createGraphics();
-		   g.drawImage(imagem, 0, 0, newImageWidth , newImageHeight , null);
-		   g.dispose();
-		   imagem = resizedImage;
-		   calculaHistograma(imagem);
-
-*/
 	}
-
-
 
 	//Classe para lidar com eventos de mouse
 	class MouseHandler extends MouseAdapter
 	{
-		//variÃ¡veis das coordenadas do recorte
+		//Variáveis das coordenadas do recorte
 		private Ponto ReMin = new Ponto();
 		private Ponto ReMax = new Ponto();
-
 		private int x1 = -1;
 		private int y1 = -1;
-
+		
 		public void retangulo() {
 			g = panel.getGraphics();
 			if (limiarizado)
 				g.drawImage(imagemL,0,0,newImageWidth,newImageHeight,null);
 			else
 				g.drawImage(imagem,0,0,newImageWidth,newImageHeight,null);
+			
 			//selecionar(ReMin,ReMax);
 			g.setColor(new Color(255,0,0));
-
-			//reta superior
+			
+			//Reta superior
 			g.drawLine(ReMin.x-offsetx,ReMax.y-offset,ReMax.x-offsetx,ReMax.y-offset);
 			g.drawLine(ReMin.x-offsetx-1,ReMax.y-offset-1,ReMax.x-offsetx-1,ReMax.y-offset-1);
-			//reta esquerda
+			//Reta esquerda
 			g.drawLine(ReMin.x-offsetx,ReMin.y-offset,ReMin.x-offsetx,ReMax.y-offset);
 			g.drawLine(ReMin.x-offsetx-1,ReMin.y-offset-1,ReMin.x-offsetx-1,ReMax.y-offset-1);
-			//reta inferior
+			//Reta inferior
 			g.drawLine(ReMin.x-offsetx,ReMin.y-offset,ReMax.x-offsetx,ReMin.y-offset);
 			g.drawLine(ReMin.x-offsetx-1,ReMin.y-offset-1,ReMax.x-offsetx-1,ReMin.y-offset-1);
-			//reta direita
+			//Reta direita
 			g.drawLine(ReMax.x-offsetx,ReMin.y-offset,ReMax.x-offsetx,ReMax.y-offset);
 			g.drawLine(ReMax.x-offsetx-1,ReMin.y-offset-1,ReMax.x-offsetx-1,ReMax.y-offset-1);
 
@@ -699,29 +643,25 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 			ReMin.x = ReMin.y = ReMax.x = ReMax.y = -1;
 		}
 
-		//selecionar
-		//apaga os pixels fora da area selecionada
-		//plotando linhas de um lado ao outro da tela
-		//ignorando os pixels dentro da selecao
+		//Selecionar
+		//Apaga os pixels fora da area selecionada, plotando linhas de um 
+		//lado ao outro da tela ignorando os pixels dentro da selecao
 		void selecionar(Ponto p1, Ponto p2) {
 			g = panel.getGraphics();
 			g.setColor(Color.WHITE);
 			for (int i=inicioA-100; i<Altura; ++i) {
 				if (i > p1.y-100 && i < p2.y-100) {
-					g.drawLine(inicioL,i,p1.x,i);//linha atÃ© a borda esquerda do retangulo
-					g.drawLine(p2.x,i,Largura,i);//linha da borda esquerda atÃ© o fim
-				} else { //dentro do retangulo selecionado
-					//plota uma linha com a cor do fundo de um lado a outro
+					g.drawLine(inicioL,i,p1.x,i);//Linha até a borda esquerda do retangulo
+					g.drawLine(p2.x,i,Largura,i);//Linha da borda esquerda até o fim
+				} else { //Dentro do retângulo selecionado
+					//Plota uma linha com a cor do fundo de um lado a outro
 					g.drawLine(inicioL,i,Largura,i);
 				}
 			}
-
 		}
 
-
-		// MÃ©todos para capturar eventos ==================================
-		// Captura um clique e define seu significado
-		// conforme a ferramenta em uso
+		// Métodos para capturar eventos
+		// Captura um clique e define seu significado conforme a ferramenta em uso
 		public void mousePressed( MouseEvent e ){
 			x1 = e.getX();
 			y1 = e.getY();
@@ -743,12 +683,9 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 						ReMax.y = ReMin.y;
 						ReMin.y = aux;
 					}
-
 					retangulo();
-					//selecionar(new Ponto(ReMin.x,ReMin.y),new Ponto(ReMax.x,ReMax.y));
 				}
 			} 
-
 			x2=x1;
 			y2=y1;
 		}
@@ -757,11 +694,9 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 			if(ferramentaAtual == Ferramentas.SELECAO) {
 				x1 = e.getX();
 				y1 = e.getY();
-
 				x2=x1;
 				y2=y1;
 			}
 		}
 	}
-
 }

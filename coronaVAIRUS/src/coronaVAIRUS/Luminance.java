@@ -98,4 +98,3 @@ public class Luminance {
         System.out.println(areCompatible(c1, c2));
     }
 }
-
