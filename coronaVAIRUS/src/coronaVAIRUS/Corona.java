@@ -12,9 +12,9 @@ package coronaVAIRUS;
 // OK Limiarizacao
 // OK Eliptica de Hough
 // OK Detectar e contar quantos virus existem na imagem
-// Corrigir erro de Mat channels pra imagem 2 no hough channels
+// OKCorrigir erro de Mat channels pra imagem 2 no hough channels
+//OK Correlacao Cruzada
 // LBPH
-// OK Correlacao Cruzada
 // Descritor de haralick
 // descritores de forma
 // circularidade
@@ -29,6 +29,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.awt.image.ConvolveOp;
+import java.awt.image.Kernel;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -55,6 +57,7 @@ import javax.swing.filechooser.FileSystemView;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
 
 public class Corona extends JFrame implements ActionListener ,ChangeListener{
 	// DefiniÃ§Ã£o de variÃ¡veis relacionadas Ã  tela
@@ -463,9 +466,24 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 
 	void limiarizacao() {
 		imagemL = Utils.deepCopy(imagem);
-		for (int i = 0; i < imagem.getWidth(); i++) {
-			for (int j = 0; j < imagem.getHeight(); j++) {
-				Color color = new Color(imagem.getRGB(i,j));
+		BufferedImage borrada = null;
+		
+		//borra um poucoa imagem para evitar buracos nos objetos
+		int radius = 11;
+	    int size = radius * 2 + 1;
+	    float weight = 1.0f / (size * size);
+	    float[] data = new float[size * size];
+	    for (int i = 0; i < data.length; i++) {
+	        data[i] = weight;
+	    }
+	    Kernel kernel = new Kernel(size,size,data);
+	    ConvolveOp op = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
+	    //tbi is BufferedImage
+	    borrada = op.filter(imagemL, null);
+		
+		for (int i = 0; i < borrada.getWidth(); i++) {
+			for (int j = 0; j < borrada.getHeight(); j++) {
+				Color color = new Color(borrada.getRGB(i,j));
 				double lum = Luminance.intensity(color);
 				if (lum >= threshold) imagemL.setRGB(i, j, Color.WHITE.getRGB());
 				else                  imagemL.setRGB(i, j, Color.BLACK.getRGB());
@@ -474,13 +492,15 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 		
 		g = panel.getGraphics();
 		g.drawImage(imagemL,0,0,null);
-		//rotulacao();
+		rotulacao();
+
 	}
 
 	void rotulacao() {
 
 		int w = imagemL.getWidth();
 		int h = imagemL.getHeight();
+
 		int ultimoRot = 0;
 		int totalRotulos = 0;
 		Color color;
@@ -539,11 +559,11 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 						totalRotulos++;
 					}else if(C == A) {
 						P = C;
-					}else if(C == 0 || A == 0) {
+					}else if(C != 0 || A != 0) {
 						P = (C != 0) ? C : A;
 					}else if(C != A){
 						P = C;
-						
+						//Unifica os rotulos
 						for(int yTmp = 0; yTmp < w; yTmp++) {
 							for(int xTmp = 0; xTmp < h; xTmp++) {
 								if(rotulos[yTmp][xTmp] == A)
@@ -580,34 +600,20 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 				}
 			}
 		}
-
-		//Unifica rotulos equivalentes
-		//para cada entrada na tabela de equivalencias
-		//varre a matriz de rotulos toda e unifica 
-/*
-		for (int[] i: equivalentes) {
-			for (int j=0; j< w; j++) {
-				for (int k=0; k<h; k++) {
-					if (rotulos[j][k] == i[1])
-						rotulos[j][k] = i[0];
-				}
-			}
-		}
-*/
 		
+		System.out.println(totalRotulos);
 		newImage = Utils.deepCopy(imagemL);
 		ArrayList<Color> cores = new ArrayList<Color>();
 		color = Utils.corAleatoria();
-		System.out.println(totalRotulos);
 		for(int x = 0; x < w; x++) {
 			for(int y = 0; y < h; y++) {	
-				if(rotulos[x][y] != 0) {
-				newImage.setRGB(x, y, new Color((color.getRed()*rotulos[x][y])%255,
-												(color.getGreen()*rotulos[x][y])%255,
-												(color.getBlue()*rotulos[x][y]%255)).getRGB());
+				if(rotulos[x][y] != -1) {
+				int red = (color.getRed()*rotulos[x][y])%255;
+				int green=(color.getGreen()*rotulos[x][y])%255;
+				int blue =(color.getBlue()*rotulos[x][y])%255;
+				newImage.setRGB(x, y, new Color(red,green,blue).getRGB());
 				}
 				else {
-					System.out.println(totalRotulos);
 					newImage.setRGB(x, y, Color.WHITE.getRGB());
 				
 				}
