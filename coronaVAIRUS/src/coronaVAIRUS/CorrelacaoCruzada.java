@@ -69,6 +69,43 @@ class CorrelacaoCruzadaRun{
 		FrameR.setNumVirus(virus.size());
 		return (BufferedImage) HighGui.toBufferedImage(img);
 	}
+	
+	public ArrayList<Point> getVirus (Mat imagem, Mat templ) {
+        Mat aux = new Mat();
+        Mat img = new Mat();
+        imagem.copyTo(img);
+        Mat result = new Mat();
+        ArrayList<Point> virus = new ArrayList<Point>();
+        int[] histogramaT = Utils.calculaHistograma2(Utils.limiarizacao(Utils.Mat2BufferedImage(templ)));
+        int sT = histogramaT[0]+histogramaT[255];
+        double percentT = histogramaT[255]/(double)sT * 100;
+        int result_cols = img.cols() - templ.cols() + 1;
+        int result_rows = img.rows() - templ.rows() + 1;
+        result.create(result_rows, result_cols, CvType.CV_32FC1);
+        img.copyTo(aux);
+        Core.MinMaxLocResult mmr = null;
+        Point min_loc = null;
+
+        //Desenha retangulos e retorna a img
+        for(int i=0; i<FrameR.getMaxVirus(); i++) {
+            //Pega o valor mÃ­nimo do template matching
+            Imgproc.matchTemplate(aux, templ, result, match_method); 
+            Core.normalize(result, result, 0, 1, Core.NORM_MINMAX, -1, new Mat());
+            mmr = Core.minMaxLoc(result);
+
+            min_loc = mmr.minLoc;
+            virus.add(min_loc);
+            //Apaga os encontrados
+            Point centro = new Point(min_loc.x + templ.cols()/2,min_loc.y+templ.rows()/2);
+            int raio =(templ.cols() < templ.rows()) ? templ.cols()/2 : templ.rows()/2;
+            Imgproc.circle(aux, centro, raio, new Scalar(255,255,255),-1);
+        }
+
+        return virus;
+	}
+	
+	
+	
 }
 
 public class CorrelacaoCruzada {
@@ -85,4 +122,10 @@ public class CorrelacaoCruzada {
 		CorrelacaoCruzadaRun ccr = new CorrelacaoCruzadaRun();
 		return ccr.run(this.img,this.templ);        
 	}
+	
+	public ArrayList<Point> getVirus() {
+		CorrelacaoCruzadaRun ccr = new CorrelacaoCruzadaRun();
+		return ccr.getVirus(this.img,this.templ); 
+	}
+	
 }

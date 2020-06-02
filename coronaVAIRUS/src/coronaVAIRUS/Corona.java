@@ -665,7 +665,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 		public void mousePressed( MouseEvent e ){
 			x1 = e.getX();
 			y1 = e.getY();
-			if (y1 > offset && y1 < offset+Altura && x1 < Largura && x1 > offsetx  &&ferramentaAtual == Ferramentas.SELECAO) {
+			if (y1 > offset && y1 < offset+imagem.getHeight() && x1 < imagem.getWidth() && x1 > offsetx  && (x2 != x1 && y2 != y1) && ferramentaAtual == Ferramentas.SELECAO) {
 				if (ReMin.x == -1) {
 					ReMin.x = x1;
 					ReMin.y = y1;

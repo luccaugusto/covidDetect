@@ -17,6 +17,8 @@ import org.opencv.core.Point;
 import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+
+import java.util.ArrayList;
 import java.util.Random;
 
 class HoughCirclesRun {
@@ -76,6 +78,58 @@ class HoughCirclesRun {
 		FrameR.setNumVirus(contador);
 		return src;
 	}
+	
+		//Detecção dos vírus apos a primeira triagem feita pelo correlacao cruzada
+		public Mat runWithList(Mat imagem, ArrayList<Point> virus,int largura, int altura,double percentT) {
+			//Load an image
+			Mat src = new Mat();
+			imagem.copyTo(src);
+
+			//para cada virus na lista recebida
+			for (Point p: virus) {
+				Mat template = imagem.submat((int)p.y,(int)(p.y+altura),(int)p.x,(int)(p.x+largura));
+				
+				int max_radius = (int)(((template.cols()/2 + template.rows()/2) / 2) * 1.7);
+				Mat gray = new Mat();
+				Imgproc.cvtColor(template, gray, Imgproc.COLOR_BGR2GRAY);
+				Imgproc.medianBlur(gray, gray, 7);
+				Mat circles = new Mat();
+				Imgproc.HoughCircles(gray, circles, Imgproc.HOUGH_GRADIENT, 1.0,
+						(double)gray.rows()/16, //Change this value to detect circles with different distances to each other
+						100.0, 30.0, 1, max_radius); //Change the last two parameters
+				//(min_radius & max_radius) to detect larger circles
+				for (int x = 0; x < circles.cols(); x++) {
+					double[] c = circles.get(0, x);
+					int x_canto= (int)Math.round(c[0]-c[2]), 
+					    y_canto= (int)Math.round(c[1]-c[2]),
+					    lado   = (int)Math.round(2*c[2]);
+					x_canto = x_canto < 0 ? 0 : x_canto;
+					y_canto = y_canto < 0 ? 0 : y_canto;
+					Mat subimagem = null;
+					
+					if (x_canto+lado <= template.rows() && y_canto+lado <= template.cols()) {
+						subimagem = template.submat(y_canto,y_canto+lado,x_canto,x_canto+lado);
+					}
+
+					if (subimagem != null && ehVirus(subimagem,percentT)) {
+						contador++;
+						//cria ponto em relacao a imagem original, nao em relacao à subimagem
+						Point center = new Point(Math.round(c[0])+p.x, Math.round(c[1])+p.y);
+						//Circle center
+						Imgproc.circle(src, center, 1, new Scalar(0,100,100), 3, 8, 0 );
+						//Circle outline
+						int radius = (int) Math.round(c[2]);
+						Color color = Utils.corAleatoria();
+						Imgproc.circle(src, center, radius, new Scalar(color.getRed(),color.getGreen(),color.getBlue()), 3, 8, 0 );
+					}
+				}
+			}
+			
+			FrameR.setNumVirus(contador);
+			return src;
+		}
+	
+	
 }
 
 public class HoughCircles {
@@ -91,5 +145,10 @@ public class HoughCircles {
 	public BufferedImage detectar() {
 		HoughCirclesRun hcr = new HoughCirclesRun();
 		return Utils.Mat2BufferedImage(hcr.run(this.imagem,this.template));        
+	}
+	
+	public BufferedImage runWithList(ArrayList<Point> virus,int largura, int altura,double percentT) {
+		HoughCirclesRun hcr = new HoughCirclesRun();
+		return Utils.Mat2BufferedImage(hcr.runWithList(this.imagem, virus, largura, altura, percentT));     
 	}
 }

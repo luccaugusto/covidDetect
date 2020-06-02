@@ -7,12 +7,17 @@ import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.Hashtable;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
+import org.opencv.core.Mat;
+import org.opencv.core.Point;
+
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -22,11 +27,6 @@ import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.SwingConstants;
 
-//TODO
-//OK Slider max_diff
-//OK Slider max_virus
-//OK Printar numero de virus
-//OK adaptar para encontrar multiplos virus
 
 public class FrameR  extends JFrame implements ActionListener, ChangeListener{
 
@@ -47,7 +47,7 @@ public class FrameR  extends JFrame implements ActionListener, ChangeListener{
 	//Correlação cruzada
 	private Icon cc  = new  ImageIcon(getClass().getResource("correlacao_cruzada.png"));
 	//LBPH
-	private Icon lb  = new  ImageIcon(getClass().getResource("lbph.png"));
+	private Icon lb  = new  ImageIcon(getClass().getResource("MIX.png"));
 	//Hough circles
 	private Icon ihc  = new  ImageIcon(getClass().getResource("hc.png"));
 
@@ -264,7 +264,7 @@ public class FrameR  extends JFrame implements ActionListener, ChangeListener{
 			do_buttonCC_actionPerfomed(arg0);
 		}
 		if(arg0.getSource() == buttonLBPH){
-			do_buttonLBPH_actionPerfomed(arg0);
+			do_buttonMIX_actionPerfomed(arg0);
 		}
 	}
 
@@ -286,8 +286,21 @@ public class FrameR  extends JFrame implements ActionListener, ChangeListener{
 		virus.setText("Vírus: "+numVirus);
 	}
 
-	protected void do_buttonLBPH_actionPerfomed(ActionEvent arg0){
+	protected void do_buttonMIX_actionPerfomed(ActionEvent arg0){
 		ultimo=2;
+		Mat img = Corona.getImagemM();
+		Mat template = Corona.getTemplateM();
+		CorrelacaoCruzada cc = new CorrelacaoCruzada(img, template);
+		int[] histogramaT = Utils.calculaHistograma2(Utils.limiarizacao(Utils.Mat2BufferedImage(template)));
+        int sT = histogramaT[0]+histogramaT[255];
+        double percentT = histogramaT[255]/(double)sT * 100;
+		ArrayList<Point> lista_virus = cc.getVirus();
+		HoughCircles hc = new HoughCircles(img,template);
+		BufferedImage detectados = hc.runWithList(lista_virus, template.cols(), template.rows(), percentT);
+		g = panel.getGraphics();
+		g.drawImage(detectados, 0, 0, null);
+		
+		
 		virus.setText("Vírus: "+numVirus);
 	}
 }
