@@ -10,7 +10,7 @@
 
  O COVID-19 é uma doença infeciosa causada pelo coronavírus da síndrome respiratória aguda grave 2 (SARS-CoV-2). A doença surgiu no final de 2019 e já atingiu mais de 180 países, com mais de 6 milhões de pessoas infectadas no mundo todo. Este trabalho foi desenvolvido como parte da disciplina de Processamento de Imagens. Desenvolvemos um aplicativo para realizar a detecção do vírus em imagens, utilizando técnicas diversas, além de realizar a contagem de vírus contidos naquela imagem. 
 
- Mais detalhes de implementação e testes estão decritos no artigo [PI_artigo.pdf](PI_artigo.pdf).
+ Mais detalhes de implementação e testes estão decritos nesse [artigo](PI_corona.pdf).
 
 ### Motivação
 A motivação deste trabalho foi colocar em prática o conhecimento adquirido durante o semestre, além de trabalhar um assunto de importância mundial.
@@ -57,8 +57,8 @@ As bibliotecas utilizadas para o desenvolvimento da aplicação foram:
 ## Experimentos e Resultados
 Os algoritmos desenvolvidos mostraram um bom desempenho na solução do problema, como podemos ver nas figuras 1 e 2. Estes resultados dependem da melhor escolha de parâmetros e área de seleção.
 
-![THE.png](artigo/THE.png)
+![THE.PNG](artigo/THE.PNG)
 Demonstração do funcionamento do algoritmo Transformada de Hough Elíptica
 
-![CC.png](artigo/CC.png)
+![CC.PNG](artigo/CC.PNG)
 Demonstração do funcionamento do algoritmo Correlação Cruzada
