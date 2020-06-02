@@ -50,9 +50,8 @@ As bibliotecas utilizadas para o desenvolvimento da aplicação foram:
 
 + Luminance: Biblioteca utilizada na limiarização. Calcula a luminância de cada pixel para garantir uma limiarização mais eficiente.
 
-
-
 ## Algoritmos
+Para uma descrição completa dos algoritmos utilizados veja o [artigo](PI_corona.pdf).
 
 ## Experimentos e Resultados
 Os algoritmos desenvolvidos mostraram um bom desempenho na solução do problema, como podemos ver nas figuras 1 e 2. Estes resultados dependem da melhor escolha de parâmetros e área de seleção.
