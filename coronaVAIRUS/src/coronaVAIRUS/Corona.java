@@ -64,7 +64,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 	//Definição de variáveis relacionadas a tela
 	private FrameR frameR = new FrameR();
 	private JPanel contentPane, panelMenu, panelH, panel, panelSlider;
-	private JButton buttonUpload, buttonZoomP, buttonZoomM, buttonSelecionar, buttonDetectar, buttonCalc;
+	private JButton buttonUpload, buttonZoomP, buttonZoomM, buttonSelecionar, buttonLimiarizar, buttonOriginal, buttonRotular, buttonCalc;
 	private int x1,y1,x2,y2;
 	private static MouseHandler mouse;
 	private Graphics g;
@@ -98,6 +98,8 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 	private Icon de   = new  ImageIcon(getClass().getResource("detectar.png"));
 	//Limiarizar
 	private Icon li   = new  ImageIcon(getClass().getResource("limiarizar.png"));
+	//Rotular
+	private Icon ro   = new  ImageIcon(getClass().getResource("rotulacao.png"));
 
 	//Tamanho do Canvas
 	private int inicioL = 0;
@@ -203,12 +205,26 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 		buttonZoomM.setBackground(Color.decode(corFundo));
 		buttonZoomM.setHorizontalTextPosition(SwingConstants.CENTER); 
 
+		//Botão imagem original
+		buttonOriginal = new JButton();
+		buttonOriginal.addActionListener((ActionListener) this);
+		buttonOriginal.setIcon(li);
+		buttonOriginal.setBackground(Color.decode(corFundo));
+		buttonOriginal.setHorizontalTextPosition(SwingConstants.CENTER);
+		
 		//Botão limiarizar
-		buttonDetectar = new JButton();
-		buttonDetectar.addActionListener((ActionListener) this);
-		buttonDetectar.setIcon(li);
-		buttonDetectar.setBackground(Color.decode(corFundo));
-		buttonDetectar.setHorizontalTextPosition(SwingConstants.CENTER);
+		buttonLimiarizar = new JButton();
+		buttonLimiarizar.addActionListener((ActionListener) this);
+		buttonLimiarizar.setIcon(li);
+		buttonLimiarizar.setBackground(Color.decode(corFundo));
+		buttonLimiarizar.setHorizontalTextPosition(SwingConstants.CENTER);
+		
+		//Botão limiarizar
+		buttonRotular = new JButton();
+		buttonRotular.addActionListener((ActionListener) this);
+		buttonRotular.setIcon(ro);
+		buttonRotular.setBackground(Color.decode(corFundo));
+		buttonRotular.setHorizontalTextPosition(SwingConstants.CENTER);
 
 		//Botão para abrir tela de contagem
 		buttonCalc = new JButton();
@@ -231,7 +247,11 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 					.addGap(10)
 					.addComponent(buttonZoomM)
 					.addGap(10)
-					.addComponent(buttonDetectar)
+					.addComponent(buttonOriginal)
+					.addGap(10)
+					.addComponent(buttonLimiarizar)
+					.addGap(10)
+					.addComponent(buttonRotular)
 					.addGap(10)
 					.addComponent(buttonCalc)
 					)
@@ -246,7 +266,9 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 						.addComponent(buttonSelecionar)
 						.addComponent(buttonZoomP)
 						.addComponent(buttonZoomM)
-						.addComponent(buttonDetectar)
+						.addComponent(buttonOriginal)
+						.addComponent(buttonLimiarizar)
+						.addComponent(buttonRotular)
 						.addComponent(buttonCalc)
 						)
 					)
@@ -320,9 +342,13 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 			do_buttonZoomP_actionPerfomed(arg0);
 		} else if(arg0.getSource() == buttonZoomM){
 			do_buttonZoomM_actionPerfomed(arg0);
-		} else if(arg0.getSource() == buttonDetectar){
-			do_buttonDetectar_actionPerfomed(arg0);
-		} else if(arg0.getSource() == buttonCalc){
+		} else if(arg0.getSource() == buttonOriginal){
+			do_buttonOriginal_actionPerfomed(arg0);
+		}else if(arg0.getSource() == buttonLimiarizar){
+			do_buttonLimiarizar_actionPerfomed(arg0);
+		} else if(arg0.getSource() == buttonRotular){
+			do_buttonRotular_actionPerfomed(arg0);
+		}else if(arg0.getSource() == buttonCalc){
 			do_buttonCalc_actionPerfomed(arg0);
 		}
 	}
@@ -390,12 +416,24 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 		}
 		redimensionarImagem();
 	}
+	
+	//Botão para exibir imagem original selecionada
+	protected void do_buttonOriginal_actionPerfomed(ActionEvent arg0){
+		g = panel.getGraphics();
+		g.drawImage(imagem,0,0,null);
+	} 
 
 	//Botão para limiarizar imagem selecionado
-	protected void do_buttonDetectar_actionPerfomed(ActionEvent arg0){
+	protected void do_buttonLimiarizar_actionPerfomed(ActionEvent arg0){
 		limiarizacao();
 		limiarizado = true;
 	} 
+	
+	//Botão para rotular imagem selecionado
+	protected void do_buttonRotular_actionPerfomed(ActionEvent arg0){
+		rotulacao();
+	} 
+	
 
 	//Botão para abrir a janela para detectar os vírus
 	protected void do_buttonCalc_actionPerfomed(ActionEvent arg0){
@@ -487,7 +525,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 		} 
 		g = panel.getGraphics();
 		g.drawImage(imagemL,0,0,null);
-		rotulacao();
+
 	}
 
 	//Rotula a imagem
