@@ -32,7 +32,8 @@ public class FrameR  extends JFrame implements ActionListener, ChangeListener{
 
 	private static JPanel contentPane,panelMenu, panel, panelS;
 	private JButton buttonLBPH, buttonCC, buttonHough;
-	private JLabel virus, labelMaxDiff, labelMaxVirus;
+	private JLabel labelMaxDiff, labelMaxVirus;
+	private static JLabel virus;
 	private static Graphics g;
 	private static int numVirus = 0;
 	private static int maxDiff = 0;
@@ -59,6 +60,7 @@ public class FrameR  extends JFrame implements ActionListener, ChangeListener{
 	
 	public static void setNumVirus(int num) {
 		numVirus = num;
+		virus.setText("Vírus: "+numVirus);
 	}
 
 	public static int getMaxDiff() {
@@ -103,6 +105,8 @@ public class FrameR  extends JFrame implements ActionListener, ChangeListener{
 				try{
 					FrameR frame = new FrameR();
 					frame.setVisible(true);
+					numVirus = 0;
+
 				} catch (Exception e){
 					e.printStackTrace();
 				}

@@ -75,7 +75,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 	private int offset = 110; //Espaço ocupado pelos botões
 	private int offsetx = 5; //Espaço ocupado pelos botões
 	private static int threshold = 190; //Limite limiarização
-	private static boolean limiarizado = false;
+	private static int ImgAtual = 0;
 	
 	//Variável do retângulo atual
 	Ponto ret1 = new Ponto();
@@ -96,6 +96,8 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 	private Icon se   = new  ImageIcon(getClass().getResource("selecionar.png"));
 	//Detectar vírus
 	private Icon de   = new  ImageIcon(getClass().getResource("detectar.png"));
+	//Restaurar
+	private Icon re   = new  ImageIcon(getClass().getResource("restaurar.png"));
 	//Limiarizar
 	private Icon li   = new  ImageIcon(getClass().getResource("limiarizar.png"));
 	//Rotular
@@ -143,7 +145,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 		if (!source.getValueIsAdjusting()) {
 			threshold = source.getValue();
 			limiarizacao();
-			limiarizado = true;
+			ImgAtual = 1;
 		}
 	}
 
@@ -208,7 +210,7 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 		//Botão imagem original
 		buttonOriginal = new JButton();
 		buttonOriginal.addActionListener((ActionListener) this);
-		buttonOriginal.setIcon(li);
+		buttonOriginal.setIcon(re);
 		buttonOriginal.setBackground(Color.decode(corFundo));
 		buttonOriginal.setHorizontalTextPosition(SwingConstants.CENTER);
 		
@@ -241,17 +243,17 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 					.addGap(130)
 					.addComponent(buttonUpload)
 					.addGap(10)
-					.addComponent(buttonSelecionar)
-					.addGap(10)
 					.addComponent(buttonZoomP)
 					.addGap(10)
 					.addComponent(buttonZoomM)
 					.addGap(10)
-					.addComponent(buttonOriginal)
-					.addGap(10)
 					.addComponent(buttonLimiarizar)
 					.addGap(10)
 					.addComponent(buttonRotular)
+					.addGap(10)
+					.addComponent(buttonOriginal)
+					.addGap(10)
+					.addComponent(buttonSelecionar)
 					.addGap(10)
 					.addComponent(buttonCalc)
 					)
@@ -263,12 +265,12 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 					.addGap(20)
 					.addGroup(g1_panelMenu.createParallelGroup(Alignment.BASELINE)
 						.addComponent(buttonUpload)
-						.addComponent(buttonSelecionar)
 						.addComponent(buttonZoomP)
 						.addComponent(buttonZoomM)
-						.addComponent(buttonOriginal)
 						.addComponent(buttonLimiarizar)
 						.addComponent(buttonRotular)
+						.addComponent(buttonOriginal)
+						.addComponent(buttonSelecionar)
 						.addComponent(buttonCalc)
 						)
 					)
@@ -421,22 +423,26 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 	protected void do_buttonOriginal_actionPerfomed(ActionEvent arg0){
 		g = panel.getGraphics();
 		g.drawImage(imagem,0,0,null);
+		ImgAtual = 0;
 	} 
 
 	//Botão para limiarizar imagem selecionado
 	protected void do_buttonLimiarizar_actionPerfomed(ActionEvent arg0){
 		limiarizacao();
-		limiarizado = true;
+		ImgAtual = 1;
 	} 
 	
 	//Botão para rotular imagem selecionado
 	protected void do_buttonRotular_actionPerfomed(ActionEvent arg0){
+		limiarizarToRotular();
 		rotulacao();
+		ImgAtual = 2;
 	} 
 	
 
 	//Botão para abrir a janela para detectar os vírus
 	protected void do_buttonCalc_actionPerfomed(ActionEvent arg0){
+		frameR.setNumVirus(0);
 		frameR.setVisible(true);
 	}  
 
@@ -503,21 +509,9 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 	//Limiarização da imagem
 	void limiarizacao() {
 		imagemL = Utils.deepCopy(imagem);
-		BufferedImage borrada = null;
-		//Borra um poucoa imagem para evitar buracos nos objetos
-		int radius = 11;
-	    int size = radius * 2 + 1;
-	    float weight = 1.0f / (size * size);
-	    float[] data = new float[size * size];
-	    for (int i = 0; i < data.length; i++) {
-	        data[i] = weight;
-	    }
-	    Kernel kernel = new Kernel(size,size,data);
-	    ConvolveOp op = new ConvolveOp(kernel, ConvolveOp.EDGE_ZERO_FILL, null);
-	    borrada = op.filter(imagemL, null);
-		for (int i = 0; i < borrada.getWidth(); i++) {
-			for (int j = 0; j < borrada.getHeight(); j++) {
-				Color color = new Color(borrada.getRGB(i,j));
+		for (int i = 0; i < imagem.getWidth(); i++) {
+			for (int j = 0; j < imagem.getHeight(); j++) {
+				Color color = new Color(imagem.getRGB(i,j));
 				double lum = Luminance.intensity(color);
 				if (lum >= threshold) imagemL.setRGB(i, j, Color.WHITE.getRGB());
 				else                  imagemL.setRGB(i, j, Color.BLACK.getRGB());
@@ -527,6 +521,35 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 		g.drawImage(imagemL,0,0,null);
 
 	}
+	
+	 void limiarizarToRotular() {
+			imagemL = Utils.deepCopy(imagem);
+			BufferedImage borrada = null;
+			//Borra um poucoa imagem para evitar buracos nos objetos
+			int radius = 11;
+		    int size = radius * 2 + 1;
+		    float weight = 1.0f / (size * size);
+		    float[] data = new float[size * size];
+		    for (int i = 0; i < data.length; i++) {
+		        data[i] = weight;
+		    }
+		    Kernel kernel = new Kernel(size,size,data);
+		    ConvolveOp op = new ConvolveOp(kernel, ConvolveOp.EDGE_ZERO_FILL, null);
+		    borrada = op.filter(imagemL, null);
+			for (int i = 0; i < borrada.getWidth(); i++) {
+				for (int j = 0; j < borrada.getHeight(); j++) {
+					Color color = new Color(borrada.getRGB(i,j));
+					double lum = Luminance.intensity(color);
+					if (lum >= threshold) imagemL.setRGB(i, j, Color.WHITE.getRGB());
+					else                  imagemL.setRGB(i, j, Color.BLACK.getRGB());
+				}   
+			} 
+			g = panel.getGraphics();
+			g.drawImage(imagemL,0,0,null);
+		 
+	 
+	 }
+	
 
 	//Rotula a imagem
 	void rotulacao() {
@@ -608,7 +631,6 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 				}
 			}
 		}
-		System.out.println(totalRotulos);
 		newImage = Utils.deepCopy(imagemL);
 		for(int x = 0; x < w; x++) {
 			for(int y = 0; y < h; y++) {	
@@ -643,11 +665,16 @@ public class Corona extends JFrame implements ActionListener ,ChangeListener{
 		
 		public void retangulo() {
 			g = panel.getGraphics();
-			if (limiarizado)
+			if (ImgAtual == 1) {
+				limiarizacao();
 				g.drawImage(imagemL,0,0,newImageWidth,newImageHeight,null);
-			else
+			}else if(ImgAtual == 2) {
+				limiarizarToRotular();
+				g.drawImage(imagemL,0,0,newImageWidth,newImageHeight,null);
+			}
+			else {
 				g.drawImage(imagem,0,0,newImageWidth,newImageHeight,null);
-			
+			}
 			//selecionar(ReMin,ReMax);
 			g.setColor(new Color(255,0,0));
 			
